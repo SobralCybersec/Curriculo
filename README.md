@@ -8,7 +8,7 @@
 ## 📚 Exemplo Prático (Meu Currículo):
 
 <p align="center">
-  <img src="https://i.imgur.com/TtuTGIq.png" width="800">
+  <img src="https://i.imgur.com/yxsa4Ms.png" width="800">
 </p>
 
 ## 📚 Referências e Recomendações:
