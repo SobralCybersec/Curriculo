@@ -1,5 +1,6 @@
 # Estudos sobre Currículos
-### Este repositório contém os estudos sobre Currículos e aborda de maneira didática, possuindo exemplos práticos e vídeos de referência para se guiar.
+### Este repositório contém os estudos sobre Currículos e aborda de maneira didática, possuindo exemplos práticos e vídeos de referência para se guiar. 
+### Caso esteja interessado em um guia mais preciso, só me adicionar no discord: serasasilva
 
 ## 📚 Mapa de Como Escrever o seu Currículo:
 
