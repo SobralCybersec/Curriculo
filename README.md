@@ -21,7 +21,7 @@ Este repositório reúne estudos aprofundados sobre currículos modernos, com fo
 
 <!--Start Roadmap-->     
 
-<h1 align="center"><img src="https://i.imgur.com/m41XwMi.gif" width="28"/>  Mapa de Como Escrever o seu Currículo</h1>
+<h1 align="center"><img src="https://i.imgur.com/WPHnoXJ.gif" width="28"/>  Mapa de Como Escrever o seu Currículo</h1>
 
 <p align="center">
   <img src="https://i.imgur.com/T1GOITn.jpeg" />
@@ -49,6 +49,15 @@ Este repositório reúne estudos aprofundados sobre currículos modernos, com fo
 
 ---
 
+<!--Start Example Final-->
+
+<h1 align="center"><img src="https://i.imgur.com/DcN6xkv.gif" width="30"/> Exemplo Final</h1>
+
+<p align="center">
+  <img src="https://i.imgur.com/nmtqWO3.png" width="800" />
+</p>
+
+---
 <!--Start Tools-->
 
 <h1 align="center"><img src="https://i.imgur.com/WYBMKO8.png" width="30"/> Ferramentas</h1>
