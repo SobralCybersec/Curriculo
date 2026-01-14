@@ -3,26 +3,25 @@
 <img src="https://i.imgur.com/s6UjAch.png" />
 
 <!--Header Name-->
-<h1 align="center">📚 Estudos sobre Currículos</h1>
+<h1 align="center"><img src="https://i.imgur.com/wKdltZr.png" width="28"/> Estudos sobre Currículos</h1>
 
 *Guia prático, técnico e didático para criação, evolução e otimização de currículos* <br />
 
 <!--Start Intro-->               
-
 <p align="left">
 Este repositório reúne estudos aprofundados sobre currículos modernos, com foco em estrutura, clareza, legibilidade para recrutadores e otimização para sistemas de triagem automática (ATS). O material é apresentado de forma didática, com exemplos práticos, mapas mentais, ferramentas e referências em vídeo.
 </p>
 
-* ✨ Conteúdo prático e aplicado
-* 🤖 Foco em ATS e leitura automatizada
-* 📄 Uso de LaTeX e Markdown para currículos profissionais
-* 🎓 Material educacional para estudantes e profissionais
+*  Conteúdo prático e aplicado
+*  Foco em ATS e leitura automatizada
+*  Uso de LaTeX e Markdown para currículos profissionais
+*  Material educacional para estudantes e profissionais
 
 ---
 
 <!--Start Roadmap-->     
 
-<h1 align="center">🗺️ Mapa de Como Escrever o seu Currículo</h1>
+<h1 align="center"><img src="https://i.imgur.com/m41XwMi.gif" width="28"/>  Mapa de Como Escrever o seu Currículo</h1>
 
 <p align="center">
   <img src="https://i.imgur.com/T1GOITn.jpeg" />
@@ -32,7 +31,7 @@ Este repositório reúne estudos aprofundados sobre currículos modernos, com fo
 
 <!--Start Example-->
 
-<h1 align="center">📄 Exemplo Prático</h1>
+<h1 align="center"><img src="https://i.imgur.com/48Z2L1Z.gif" width="30"/> Exemplo Prático</h1>
 
 <p align="center">
   <img src="https://i.imgur.com/tXN0Wac.png" width="800" />
@@ -42,7 +41,7 @@ Este repositório reúne estudos aprofundados sobre currículos modernos, com fo
 
 <!--Start ATS-->
 
-<h1 align="center">🤖 Como Evoluir Seu Currículo e Hackear o ATS</h1>
+<h1 align="center"><img src="https://i.imgur.com/m41XwMi.gif" width="35"/>  Como Evoluir Seu Currículo e Hackear o ATS</h1>
 
 <p align="center">
   <img src="https://i.imgur.com/v8RZ0uq.jpeg" />
@@ -52,7 +51,7 @@ Este repositório reúne estudos aprofundados sobre currículos modernos, com fo
 
 <!--Start Tools-->
 
-<h1 align="center">🛠️ Ferramentas</h1>
+<h1 align="center"><img src="https://i.imgur.com/WYBMKO8.png" width="30"/> Ferramentas</h1>
 
 <div align="center">
 
@@ -71,7 +70,7 @@ Este repositório reúne estudos aprofundados sobre currículos modernos, com fo
 
 <!--Start References-->
 
-<h1 align="center">🎥 Referências e Recomendações</h1>
+<h1 align="center"><img src="https://i.imgur.com/6nSJzZ2.gif" width="35"/> Referências e Recomendações</h1>
 
 <div align="center">
 
