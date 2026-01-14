@@ -1,6 +1,6 @@
 # Estudos sobre Currículos
 ### Este repositório contém os estudos sobre Currículos e aborda de maneira didática, possuindo exemplos práticos e vídeos de referência para se guiar. 
-### Próxima Atualização: Em Breve
+### Próxima Atualização: Hoje 13/01
 
 ## 📚 Mapa de Como Escrever o seu Currículo:
 
