@@ -10,6 +10,8 @@
 <!--Start Intro-->               
 <p align="left">
 Este repositório reúne estudos aprofundados sobre currículos modernos, com foco em estrutura, clareza, legibilidade para recrutadores e otimização para sistemas de triagem automática (ATS). O material é apresentado de forma didática, com exemplos práticos, mapas mentais, ferramentas e referências em vídeo.
+
+Próxima atualização vai ser sobre a plataforma gupy
 </p>
 
 *  Conteúdo prático e aplicado
