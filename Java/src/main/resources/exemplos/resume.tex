@@ -1,0 +1,93 @@
+%-------------------------------------------------------------------------------
+% CONFIGURATIONS
+%-------------------------------------------------------------------------------
+% A4 paper size by default, use 'letterpaper' for US letter
+\documentclass[11pt, a4paper]{curriculo}
+
+% Configure page margins with geometry
+\geometry{left=1.4cm, top=.8cm, right=1.4cm, bottom=1.8cm, footskip=.5cm}
+
+\definecolor{verdeescuro}{HTML}{219150}
+\definecolor{roxopresenca}{HTML}{2B0A3D}
+\colorlet{awesome}{verdeescuro}
+
+% Color for highlights
+% Awesome Colors: awesome-emerald, awesome-skyblue, awesome-red, awesome-pink, awesome-orange
+%                 awesome-nephritis, awesome-concrete, awesome-darknight
+\colorlet{awesome}{roxopresenca}
+% Uncomment if you would like to specify your own color
+% \definecolor{awesome}{HTML}{3E6D9C}
+
+% Colors for text
+% Uncomment if you would like to specify your own color
+% \definecolor{darktext}{HTML}{414141}
+% \definecolor{text}{HTML}{333333}
+\definecolor{graytext}{HTML}{5D5D5D}
+\definecolor{lighttext}{HTML}{999999}
+% \definecolor{sectiondivider}{HTML}{5D5D5D}
+
+% Set false if you don't want to highlight section with awesome color
+\setbool{acvSectionColorHighlight}{true}
+
+% If you would like to change the social information separator from a pipe (|) to something else
+\renewcommand{\acvHeaderSocialSep}{\quad\textbar\quad}
+
+
+%-------------------------------------------------------------------------------
+%	PERSONAL INFORMATION
+%	Comment any of the lines below if they are not required
+%-------------------------------------------------------------------------------
+% Available options: circle|rectangle,edge/noedge,left/right
+% \photo[rectangle,edge,right]{./examples/profile}
+\name{Matheus}{Sobral da Silva}
+\position{Desenvolvedor de Software{\enskip\cdotp\enskip}Estagiário{\enskip\cdotp\enskip}Cibersegurança}
+
+\mobile{(21) 97290-8975}
+\email{matheussobrallinkedin@gmail.com}
+%\dateofbirth{January 1st, 1970}
+\github{SobralCybersec}
+\linkedin{matheussilvajava}
+% \gitlab{gitlab-id}
+% \stackoverflow{SO-id}{SO-name}
+% \twitter{@twit}
+% \x{x-id}
+% \skype{skype-id}
+% \reddit{reddit-id}
+% \medium{madium-id}
+% \kaggle{kaggle-id}
+% \hackerrank{hackerrank-id}
+% \telegram{telegram-username}
+% \googlescholar{googlescholar-id}{name-to-display}
+%% \firstname and \lastname will be used
+% \googlescholar{googlescholar-id}{}
+% \extrainfo{extra information}
+
+%\quote{``Everything has a price, but the knowledge is free.."}
+
+
+%-------------------------------------------------------------------------------
+\begin{document}
+
+% Print the header with above personal information
+% Give optional argument to change alignment(C: center, L: left, R: right)
+\makecvheader[C]
+
+% Print the footer with 3 arguments(<left>, <center>, <right>)
+% Leave any of these blank if they are not needed
+%\makecvfooter
+ % {\today}
+%  {Math~~~·~~~}
+  %{\thepage}
+
+
+%-------------------------------------------------------------------------------
+%	CV/RESUME CONTENT
+%	Each section is imported separately, open each file in turn to modify content
+%-------------------------------------------------------------------------------
+\input{resume/summary.tex}
+\input{resume/education.tex}
+\input{resume/experience.tex}
+\input{resume/skills.tex}
+
+%-------------------------------------------------------------------------------
+\end{document}

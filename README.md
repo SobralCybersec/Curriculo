@@ -5,7 +5,7 @@
 <!--Header Name-->
 <h1 align="center"><img src="https://i.imgur.com/wKdltZr.png" width="28"/> Estudos sobre Currículos</h1>
 
-*Guia prático, técnico e didático para criação, evolução e otimização de currículos* <br />
+*Guia prático (agora com um software novo), técnico e didático para criação, evolução e otimização de currículos* <br />
 
 <!--Start Intro-->               
 <p align="left">
@@ -56,8 +56,70 @@ Próxima atualização vai ser sobre a plataforma gupy
 <h1 align="center"><img src="https://i.imgur.com/DcN6xkv.gif" width="30"/> Exemplo Final</h1>
 
 <p align="center">
-  <img src="https://i.imgur.com/nmtqWO3.png" width="800" />
+  <img src="https://i.imgur.com/hKBgbWp.png" width="800" />
 </p>
+
+---
+
+<!--Start Editor-->
+
+<h1 align="center"><img src="https://i.imgur.com/vlEUDFD.png" width="30"/> Editor de Currículo Latex Simplificado</h1>
+
+<div align="center">
+
+*O repositório inclui um editor visual desenvolvido em Java Swing que facilita a edição de currículos LaTeX.*
+
+• Java 11 ou superior
+
+• XeLaTeX instalado (para compilação de PDF)
+
+• Tags: \& = adiciona um & e \textbf{} marca o texto como negrito
+
+<img src="https://i.imgur.com/6Fa9YW0.png" width="50%">
+
+--- 
+
+<h1 align="center"><img src="https://i.imgur.com/KdSjIUj.gif" width=30"/> Software</h1>
+
+<div>
+    <h3><img src="https://i.imgur.com/kfK4cf8.png" width="30"/> Estrutura:</h3> 
+
+    1- Arquitetura MVC
+
+    2- SOLID, Clean Code, Design Patters Aplicados
+
+    3- Interação com Java Swing, JFrame, PDF's, Metadados e Conversão
+</div>
+
+<div>
+    <h3><img src="https://i.imgur.com/lEICgNN.gif" width="30"> Features:</h3> 
+
+    1- Edição visual de dados pessoais (nome, telefone, email, GitHub)
+
+    2- Compilação direta para PDF
+
+    3- Adição automática de metadados ATS-friendly
+
+    4- Exportação direta
+
+    5- Preservação de Formatação
+</div>
+
+<div>
+    <h3><img src="https://i.imgur.com/Hrq6bvX.png" width="30"> Adição de Metadados para burlar o ATS:</h3> 
+
+    1- Keywords: Todas as habilidades + cargos (otimizado para ATS)
+
+    2- **Title**: Cargos separados por |
+
+    3- **Subject**: Cargos separados por vírgula
+
+    4- **Description**: Resumo profissional sem formatação LaTeX
+
+    5- **Author/Producer/Creator**: Nome completo
+    
+    6- Category: CV
+</div>
 
 ---
 <!--Start Tools-->
@@ -65,6 +127,9 @@ Próxima atualização vai ser sobre a plataforma gupy
 <h1 align="center"><img src="https://i.imgur.com/WYBMKO8.png" width="30"/> Ferramentas</h1>
 
 <div align="center">
+
+**Editor Visual Java (Incluído no Repositório)**
+Editor gráfico para facilitar a edição de currículos LaTeX sem precisar editar código diretamente.
 
 **Overleaf (LaTeX para Currículos)**
 [https://pt.overleaf.com/gallery/tagged/cv](https://pt.overleaf.com/gallery/tagged/cv)
@@ -76,6 +141,7 @@ Próxima atualização vai ser sobre a plataforma gupy
 [https://www.tug.org/texlive](https://www.tug.org/texlive)
 
 </div>
+
 
 ---
 
