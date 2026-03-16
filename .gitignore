@@ -15,6 +15,7 @@ buildNumber.properties
 *.jar
 *.war
 *.ear
+.amazonq
 hs_err_pid*
 
 # IDE

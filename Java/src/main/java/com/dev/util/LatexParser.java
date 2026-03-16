@@ -1,6 +1,5 @@
 package com.dev.util;
 
-import com.dev.model.ResumeData;
 import javax.swing.table.DefaultTableModel;
 
 public class LatexParser {

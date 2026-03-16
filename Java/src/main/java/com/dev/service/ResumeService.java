@@ -1,7 +1,5 @@
 package com.dev.service;
 
-import com.dev.model.ResumeData;
-import com.dev.util.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import javax.swing.table.DefaultTableModel;
@@ -58,10 +56,22 @@ public class ResumeService {
     }
     
     public void saveAll(String mainTex, String summaryTex, String educationTex, 
-                       String experienceTex, String skillsTex) throws IOException {
+                       String experienceTex, String skillsTex, String photoPath) throws IOException {
         if (!Files.exists(basePath)) {
             Files.createDirectories(basePath);
+        }
+        if (!Files.exists(basePath.resolve("resume"))) {
             Files.createDirectories(basePath.resolve("resume"));
+        }
+        
+        copyResourcesIfNeeded();
+        
+        if (photoPath != null && !photoPath.isEmpty()) {
+            Path source = Paths.get(photoPath);
+            if (Files.exists(source)) {
+                String extension = photoPath.substring(photoPath.lastIndexOf('.'));
+                Files.copy(source, basePath.resolve("profile" + extension), StandardCopyOption.REPLACE_EXISTING);
+            }
         }
         
         Files.writeString(basePath.resolve("resume.tex"), mainTex);
@@ -69,6 +79,38 @@ public class ResumeService {
         Files.writeString(basePath.resolve("resume/education.tex"), educationTex);
         Files.writeString(basePath.resolve("resume/experience.tex"), experienceTex);
         Files.writeString(basePath.resolve("resume/skills.tex"), skillsTex);
+    }
+    
+    private void copyResourcesIfNeeded() throws IOException {
+        if (!Files.exists(basePath.resolve("curriculo.cls"))) {
+            try (InputStream is = getClass().getResourceAsStream("/exemplos/curriculo.cls")) {
+                if (is != null) {
+                    Files.copy(is, basePath.resolve("curriculo.cls"), StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        }
+        
+        Path fontDir = basePath.resolve("fontdir");
+        if (!Files.exists(fontDir)) {
+            Files.createDirectories(fontDir);
+            String[] fonts = {
+                "SourceSans3-Black.ttf", "SourceSans3-BlackIt.ttf",
+                "SourceSans3-Bold.ttf", "SourceSans3-BoldIt.ttf",
+                "SourceSans3-ExtraLight.ttf", "SourceSans3-ExtraLightIt.ttf",
+                "SourceSans3-It.ttf", "SourceSans3-Light.ttf",
+                "SourceSans3-LightIt.ttf", "SourceSans3-Medium.ttf",
+                "SourceSans3-MediumIt.ttf", "SourceSans3-Regular.ttf",
+                "SourceSans3-Semibold.ttf", "SourceSans3-SemiboldIt.ttf"
+            };
+            
+            for (String font : fonts) {
+                try (InputStream is = getClass().getResourceAsStream("/exemplos/fontdir/" + font)) {
+                    if (is != null) {
+                        Files.copy(is, fontDir.resolve(font), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            }
+        }
     }
     
     public int compilePDF() throws IOException, InterruptedException {
@@ -80,7 +122,7 @@ public class ResumeService {
         BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
         String line;
         while ((line = reader.readLine()) != null) {
-            // Consume output
+            
         }
         
         return p.waitFor();
@@ -115,6 +157,10 @@ public class ResumeService {
     
     public void exportPDF(Path destination) throws IOException {
         Files.copy(basePath.resolve("resume.pdf"), destination, StandardCopyOption.REPLACE_EXISTING);
+    }
+    
+    public File getPDFFile() {
+        return basePath.resolve("resume.pdf").toFile();
     }
     
     private String extractKeywords(DefaultTableModel skillsModel, List<String> positions) {

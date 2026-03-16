@@ -22,6 +22,30 @@ public class ResumeData {
         this.skills = new ArrayList<>();
     }
     
+    public void setName(String fullName) {
+        setFullName(fullName);
+    }
+    
+    public void setPhone(String phone) {
+        this.mobile = phone;
+    }
+    
+    public void addPosition(String position) {
+        this.positions.add(position);
+    }
+    
+    public void addEducation(Education education) {
+        this.educations.add(education);
+    }
+    
+    public void addExperience(Experience experience) {
+        this.experiences.add(experience);
+    }
+    
+    public void addSkill(Skill skill) {
+        this.skills.add(skill);
+    }
+    
     public String getFullName() {
         return firstName + " " + lastName;
     }
@@ -73,6 +97,8 @@ public class ResumeData {
         public String period;
         public String description;
         
+        public Education() {}
+        
         public Education(String degree, String institution, String location, String period, String description) {
             this.degree = degree;
             this.institution = institution;
@@ -83,14 +109,16 @@ public class ResumeData {
     }
     
     public static class Experience {
-        public String title;
+        public String position;
         public String company;
         public String location;
         public String period;
         public String description;
         
-        public Experience(String title, String company, String location, String period, String description) {
-            this.title = title;
+        public Experience() {}
+        
+        public Experience(String position, String company, String location, String period, String description) {
+            this.position = position;
             this.company = company;
             this.location = location;
             this.period = period;
@@ -100,11 +128,13 @@ public class ResumeData {
     
     public static class Skill {
         public String category;
-        public String skills;
+        public String items;
         
-        public Skill(String category, String skills) {
+        public Skill() {}
+        
+        public Skill(String category, String items) {
             this.category = category;
-            this.skills = skills;
+            this.items = items;
         }
     }
 }

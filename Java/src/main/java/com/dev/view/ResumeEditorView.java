@@ -15,6 +15,8 @@ public class ResumeEditorView extends JFrame {
     private JTextField nameField, positionField, mobileField, emailField, githubField, linkedinField;
     private JTable summaryTable, educationTable, experienceTable, skillsTable;
     private JTextArea eduDescArea, expDescArea;
+    private PDFPreviewPanel pdfPreview;
+    private OptionsPanel optionsPanel;
     private java.util.List<String> positions = new ArrayList<>();
     
     public ResumeEditorView() {
@@ -24,10 +26,14 @@ public class ResumeEditorView extends JFrame {
     }
     
     private void initUI() {
-        setTitle("Editor de Currículo LaTeX");
-        setSize(1200, 800);
+        setTitle("Currículo Maker");
+        setSize(1600, 900);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setDividerLocation(950);
+        splitPane.setResizeWeight(0.6);
         
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Dados Pessoais", createPersonalPanel());
@@ -35,7 +41,13 @@ public class ResumeEditorView extends JFrame {
         tabs.addTab("Educação", createEducationPanel());
         tabs.addTab("Experiência", createExperiencePanel());
         tabs.addTab("Habilidades", createSkillsPanel());
+        tabs.addTab("Opções", optionsPanel = new OptionsPanel());
         tabs.addTab("Main (resume.tex)", createTextPanel(mainTexArea = new JTextArea()));
+        
+        pdfPreview = new PDFPreviewPanel();
+        
+        splitPane.setLeftComponent(tabs);
+        splitPane.setRightComponent(pdfPreview);
         
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton loadBtn = new JButton("Carregar");
@@ -43,14 +55,14 @@ public class ResumeEditorView extends JFrame {
         JButton compileBtn = new JButton("Compilar PDF");
         
         loadBtn.addActionListener(e -> loadFiles());
-        saveBtn.addActionListener(e -> saveFiles());
+        saveBtn.addActionListener(e -> saveAndPreview());
         compileBtn.addActionListener(e -> compilePDF());
         
         bottomPanel.add(loadBtn);
         bottomPanel.add(saveBtn);
         bottomPanel.add(compileBtn);
         
-        add(tabs, BorderLayout.CENTER);
+        add(splitPane, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
     }
     
@@ -237,6 +249,7 @@ public class ResumeEditorView extends JFrame {
         try {
             mainTexArea.setText(service.loadMainTex());
             parsePersonalInfo(mainTexArea.getText());
+            parseOptions(mainTexArea.getText());
             LatexParser.parseSummary(service.loadSummaryTex(), (DefaultTableModel) summaryTable.getModel());
             LatexParser.parseEducation(service.loadEducationTex(), (DefaultTableModel) educationTable.getModel());
             LatexParser.parseExperience(service.loadExperienceTex(), (DefaultTableModel) experienceTable.getModel());
@@ -267,6 +280,95 @@ public class ResumeEditorView extends JFrame {
         linkedinField.setText(LatexParser.extractValue(tex, "\\linkedin{", "}"));
     }
     
+    private void parseOptions(String tex) {
+        int quoteStart = tex.indexOf("\\quote{");
+        if (quoteStart >= 0 && !tex.substring(Math.max(0, quoteStart - 10), quoteStart).contains("%")) {
+            String quote = LatexParser.extractValue(tex, "\\quote{", "}");
+            quote = quote.replaceAll("``", "").replaceAll("''", "").replaceAll("&quot;", "").trim();
+            optionsPanel.setQuote(quote);
+        } else {
+            optionsPanel.setQuote(null);
+        }
+        
+        int photoStart = tex.indexOf("\\photo");
+        boolean photoEnabled = photoStart >= 0 && !tex.substring(Math.max(0, photoStart - 10), photoStart).contains("%");
+        optionsPanel.setPhotoEnabled(photoEnabled);
+        
+        if (photoEnabled) {
+            String photoLine = tex.substring(photoStart, tex.indexOf('\n', photoStart));
+            if (photoLine.contains("[rectangle]")) optionsPanel.setPhotoFormat("rectangle");
+            else if (photoLine.contains("[edge]")) optionsPanel.setPhotoFormat("edge");
+            else if (photoLine.contains("[right]")) optionsPanel.setPhotoFormat("right");
+            
+            String photoPath = LatexParser.extractValue(photoLine, "{}", "}");
+            if (photoPath == null || photoPath.isEmpty()) {
+                photoPath = LatexParser.extractValue(photoLine, "{", "}");
+            }
+            optionsPanel.setPhotoPath(photoPath);
+        }
+        
+        String colorPattern = "\\definecolor{cordeescolha}{HTML}{";
+        int colorStart = tex.indexOf(colorPattern);
+        if (colorStart >= 0) {
+            int valueStart = colorStart + colorPattern.length();
+            int valueEnd = tex.indexOf('}', valueStart);
+            if (valueEnd > valueStart) {
+                String color = tex.substring(valueStart, valueEnd).trim();
+                if (color.matches("[0-9A-Fa-f]{6}")) {
+                    optionsPanel.setThemeColor(color);
+                }
+            }
+        } else {
+            int roxoStart = tex.indexOf("\\definecolor{roxopresenca}{HTML}{");
+            if (roxoStart >= 0) {
+                int valueStart = roxoStart + "\\definecolor{roxopresenca}{HTML}{".length();
+                int valueEnd = tex.indexOf('}', valueStart);
+                if (valueEnd > valueStart) {
+                    String color = tex.substring(valueStart, valueEnd).trim();
+                    if (color.matches("[0-9A-Fa-f]{6}")) {
+                        optionsPanel.setThemeColor(color);
+                    }
+                }
+            }
+        }
+        
+        String[] socials = {"gitlab", "stackoverflow", "twitter", "x", "skype", "reddit", "medium", "kaggle", "hackerrank", "telegram"};
+        for (String social : socials) {
+            int socialStart = tex.indexOf("\\" + social + "{");
+            if (socialStart >= 0 && !tex.substring(Math.max(0, socialStart - 10), socialStart).contains("%")) {
+                String value = LatexParser.extractValue(tex, "\\" + social + "{", "}");
+                optionsPanel.setSocial(social, value);
+            } else {
+                optionsPanel.setSocial(social, null);
+            }
+        }
+    }
+    
+    private void saveAndPreview() {
+        try {
+            saveFiles();
+            
+            int exitCode = service.compilePDF();
+            if (exitCode == 0) {
+                DefaultTableModel summaryModel = (DefaultTableModel) summaryTable.getModel();
+                String summary = summaryModel.getRowCount() > 0 && summaryModel.getValueAt(0, 0) != null 
+                               ? summaryModel.getValueAt(0, 0).toString() : "";
+                
+                service.addPDFMetadata(nameField.getText(), positions, summary, 
+                                      (DefaultTableModel) skillsTable.getModel());
+                
+                File pdfFile = service.getPDFFile();
+                if (pdfFile.exists()) {
+                    pdfPreview.loadPDF(pdfFile);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Erro na compilação", "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erro: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
     private void saveFiles() {
         try {
             String mainTex = updatePersonalInfo(mainTexArea.getText());
@@ -274,7 +376,8 @@ public class ResumeEditorView extends JFrame {
                 LatexGenerator.generateSummary((DefaultTableModel) summaryTable.getModel()),
                 LatexGenerator.generateEducation(educationTable),
                 LatexGenerator.generateExperience(experienceTable),
-                LatexGenerator.generateSkills((DefaultTableModel) skillsTable.getModel()));
+                LatexGenerator.generateSkills((DefaultTableModel) skillsTable.getModel()),
+                optionsPanel.getPhotoPath());
             
             JOptionPane.showMessageDialog(this, "Arquivos salvos com sucesso!");
         } catch (Exception e) {
@@ -307,7 +410,147 @@ public class ResumeEditorView extends JFrame {
         tex = tex.replaceFirst("\\\\github\\{[^}]*\\}", "\\\\github{" + githubField.getText() + "}");
         tex = tex.replaceFirst("\\\\linkedin\\{[^}]*\\}", "\\\\linkedin{" + linkedinField.getText() + "}");
         
+        tex = updateOptions(tex);
+        
         mainTexArea.setText(tex);
+        return tex;
+    }
+    
+    private String updateOptions(String tex) {
+        String quote = optionsPanel.getQuote();
+        int quoteStart = tex.indexOf("\\quote{");
+        if (quoteStart < 0) quoteStart = tex.indexOf("% \\quote{");
+        
+        if (quoteStart >= 0) {
+            int lineStart = tex.lastIndexOf('\n', quoteStart) + 1;
+            int lineEnd = tex.indexOf('\n', quoteStart);
+            if (lineEnd < 0) lineEnd = tex.length();
+            
+            String newLine;
+            if (quote != null && !quote.isEmpty()) {
+                newLine = "\\quote{``" + quote + "''}";
+            } else {
+                newLine = "% \\quote{``Everything has a price, but the knowledge is free..``}";
+            }
+            
+            tex = tex.substring(0, lineStart) + newLine + tex.substring(lineEnd);
+        }
+        
+        tex = updateColorOption(tex);
+        tex = updatePhotoOption(tex);
+        
+        for (Map.Entry<String, String> entry : optionsPanel.getEnabledSocials().entrySet()) {
+            tex = updateSocialOption(tex, entry.getKey(), entry.getValue());
+        }
+        
+        String[] allSocials = {"gitlab", "stackoverflow", "twitter", "x", "skype", "reddit", "medium", "kaggle", "hackerrank", "telegram"};
+        for (String social : allSocials) {
+            if (!optionsPanel.getEnabledSocials().containsKey(social)) {
+                tex = toggleOption(tex, "\\" + social, false);
+            }
+        }
+        
+        return tex;
+    }
+    
+    private String updatePhotoOption(String tex) {
+        int photoStart = tex.indexOf("\\photo");
+        if (photoStart < 0) photoStart = tex.indexOf("% \\photo");
+        
+        if (photoStart >= 0) {
+            int lineStart = tex.lastIndexOf('\n', photoStart) + 1;
+            int lineEnd = tex.indexOf('\n', photoStart);
+            if (lineEnd < 0) lineEnd = tex.length();
+            
+            String currentLine = tex.substring(lineStart, lineEnd);
+            boolean isCommented = currentLine.trim().startsWith("%");
+            
+            if (optionsPanel.isPhotoEnabled()) {
+                String photoPath = optionsPanel.getPhotoPath();
+                if (photoPath != null && !photoPath.isEmpty()) {
+                    String format = optionsPanel.getPhotoFormat();
+                    String newLine;
+                    if (format != null) {
+                        newLine = "\\photo[" + format + "]{profile}";
+                    } else {
+                        newLine = "\\photo{profile}";
+                    }
+                    tex = tex.substring(0, lineStart) + newLine + tex.substring(lineEnd);
+                } else if (!isCommented) {
+                    tex = tex.substring(0, lineStart) + "% " + currentLine.trim() + tex.substring(lineEnd);
+                }
+            } else {
+                if (!isCommented) {
+                    tex = tex.substring(0, lineStart) + "% " + currentLine.trim() + tex.substring(lineEnd);
+                }
+            }
+        }
+        
+        return tex;
+    }
+    
+    private String updateColorOption(String tex) {
+        String searchPattern = "\\definecolor{cordeescolha}{HTML}{";
+        int colorStart = tex.indexOf(searchPattern);
+        
+        if (colorStart >= 0) {
+            int valueStart = colorStart + searchPattern.length();
+            int valueEnd = tex.indexOf('}', valueStart);
+            
+            if (valueEnd > valueStart) {
+                String newColor = optionsPanel.getThemeColor();
+                tex = tex.substring(0, valueStart) + newColor + tex.substring(valueEnd);
+            }
+        } else {
+            int roxoPresencaPos = tex.indexOf("\\definecolor{roxopresenca}{HTML}{");
+            if (roxoPresencaPos >= 0) {
+                int lineEnd = tex.indexOf('\n', roxoPresencaPos);
+                if (lineEnd > 0) {
+                    String newLine = "\n\\definecolor{cordeescolha}{HTML}{" + optionsPanel.getThemeColor() + "}";
+                    tex = tex.substring(0, lineEnd) + newLine + tex.substring(lineEnd);
+                }
+            }
+        }
+        
+        if (tex.contains("\\colorlet{awesome}{roxopresenca}")) {
+            tex = tex.replace("\\colorlet{awesome}{roxopresenca}", "\\colorlet{awesome}{cordeescolha}");
+        } else if (tex.contains("\\colorlet{awesome}{verdeescuro}")) {
+            tex = tex.replace("\\colorlet{awesome}{verdeescuro}", "\\colorlet{awesome}{cordeescolha}");
+        }
+        
+        return tex;
+    }
+    
+    private String updateSocialOption(String tex, String social, String value) {
+        String command = "\\" + social + "{";
+        int cmdStart = tex.indexOf(command);
+        if (cmdStart < 0) cmdStart = tex.indexOf("% " + command);
+        
+        if (cmdStart >= 0) {
+            int lineStart = tex.lastIndexOf('\n', cmdStart) + 1;
+            int lineEnd = tex.indexOf('\n', cmdStart);
+            if (lineEnd < 0) lineEnd = tex.length();
+            
+            String newLine = command + value + "}";
+            tex = tex.substring(0, lineStart) + newLine + tex.substring(lineEnd);
+        }
+        
+        return tex;
+    }
+    
+    private String toggleOption(String tex, String command, boolean enabled) {
+        int cmdStart = tex.indexOf(command);
+        if (cmdStart < 0) return tex;
+        
+        int lineStart = tex.lastIndexOf('\n', cmdStart) + 1;
+        String linePrefix = tex.substring(lineStart, cmdStart);
+        
+        if (enabled && linePrefix.trim().startsWith("%")) {
+            tex = tex.substring(0, lineStart) + linePrefix.replaceFirst("% ", "") + tex.substring(cmdStart);
+        } else if (!enabled && !linePrefix.trim().startsWith("%")) {
+            tex = tex.substring(0, lineStart) + "% " + tex.substring(lineStart);
+        }
+        
         return tex;
     }
     
@@ -347,4 +590,5 @@ public class ResumeEditorView extends JFrame {
             }
         }
     }
+
 }

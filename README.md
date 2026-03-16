@@ -5,21 +5,44 @@
 <!--Header Name-->
 <h1 align="center"><img src="https://i.imgur.com/wKdltZr.png" width="28"/> Estudos sobre Currículos</h1>
 
-*Guia prático (agora com um software novo), técnico e didático para criação, evolução e otimização de currículos* <br />
+*Guia prático com editor visual profissional para criação, evolução e otimização de currículos* <br />
 
 <!--Start Intro-->               
 <p align="left">
 Este repositório reúne estudos aprofundados sobre currículos modernos, com foco em estrutura, clareza, legibilidade para recrutadores e otimização para sistemas de triagem automática (ATS). O material é apresentado de forma didática, com exemplos práticos, mapas mentais, ferramentas e referências em vídeo.
-
-Próxima atualização vai ser sobre a plataforma gupy
 </p>
 
 *  Conteúdo prático e aplicado
 *  Foco em ATS e leitura automatizada
-*  Uso de LaTeX e Markdown para currículos profissionais
+*  Editor visual profissional com temas claro/escuro
+*  Uso de LaTeX para currículos profissionais
 *  Material educacional para estudantes e profissionais
 
 ---
+
+
+<h1 align="center"><img src="https://i.imgur.com/vlEUDFD.png" width="30"/> Editor de Currículo LaTeX Profissional</h1>
+
+<div align="center">
+
+*Editor visual completo desenvolvido em Java Swing para edição de currículos LaTeX com interface moderna e intuitiva.*
+
+```md
+• Java 21 ou superior
+
+• XeLaTeX instalado (TeX Live ou MiKTeX)
+
+• `\&` = Adiciona um & (ampersand)
+
+• `\textbf{texto}` = Texto em negrito
+```
+
+---
+
+<img src="https://i.imgur.com/WffZ8ym.png">
+<img src="https://i.imgur.com/S5orImC.png">
+
+--- 
 
 <!--Start Roadmap-->     
 
@@ -61,54 +84,48 @@ Próxima atualização vai ser sobre a plataforma gupy
 
 ---
 
-<!--Start Editor-->
-
-<h1 align="center"><img src="https://i.imgur.com/vlEUDFD.png" width="30"/> Editor de Currículo Latex Simplificado</h1>
-
-<div align="center">
-
-*O repositório inclui um editor visual desenvolvido em Java Swing que facilita a edição de currículos LaTeX.*
-
-• Java 11 ou superior
-
-• XeLaTeX instalado (para compilação de PDF)
-
-• Tags: \& = adiciona um & e \textbf{} marca o texto como negrito
-
-<img src="https://i.imgur.com/6Fa9YW0.png" width="50%">
-
---- 
-
 <h1 align="center"><img src="https://i.imgur.com/KdSjIUj.gif" width=30"/> Software</h1>
 
 <div>
-    <h3><img src="https://i.imgur.com/kfK4cf8.png" width="30"/> Estrutura:</h3> 
+    <h3><img src="https://i.imgur.com/kfK4cf8.png" width="30"/> Estrutura Técnica:</h3> 
 
-    1- Arquitetura MVC
+    1- Arquitetura MVC (Model-View-Controller)
 
-    2- SOLID, Clean Code, Design Patters Aplicados
+    2- SOLID, Clean Code, Design Patterns aplicados
 
-    3- Interação com Java Swing, JFrame, PDF's, Metadados e Conversão
+    3- Java Swing com temas customizáveis
+
+    4- Integração com Apache PDFBox 2.0.30
+
+    5- Compilação automática via XeLaTeX
 </div>
 
 <div>
-    <h3><img src="https://i.imgur.com/lEICgNN.gif" width="30"> Features:</h3> 
+    <h3><img src="https://i.imgur.com/lEICgNN.gif" width="30"> Funcionalidades Principais:</h3> 
 
-    1- Edição visual de dados pessoais (nome, telefone, email, GitHub)
+    1- Edição visual completa de dados pessoais
 
-    2- Compilação direta para PDF
+    2- Gerenciamento de múltiplos cargos
 
-    3- Adição automática de metadados ATS-friendly
+    3- Tabelas dinâmicas para educação, experiência e habilidades
 
-    4- Exportação direta
+    4- Compilação e preview em tempo real
 
-    5- Preservação de Formatação
+    5- Exportação de PDF com metadados ATS
+
+    6- Preservação de formatação LaTeX
+
+    7- Sistema de temas claro/escuro
+
+    8- Upload e gerenciamento de foto de perfil
+
+    9- Seletor de cores RGB para tema do currículo
 </div>
 
 <div>
-    <h3><img src="https://i.imgur.com/Hrq6bvX.png" width="30"> Adição de Metadados para burlar o ATS:</h3> 
+    <h3><img src="https://i.imgur.com/Hrq6bvX.png" width="30"> Metadados ATS Automáticos:</h3> 
 
-    1- Keywords: Todas as habilidades + cargos (otimizado para ATS)
+    1- **Keywords**: Todas as habilidades + cargos (otimizado para ATS)
 
     2- **Title**: Cargos separados por |
 
@@ -118,7 +135,19 @@ Próxima atualização vai ser sobre a plataforma gupy
 
     5- **Author/Producer/Creator**: Nome completo
     
-    6- Category: CV
+    6- **Category**: CV
+</div>
+
+<div>
+    <h3>Build e Execução:</h3>
+
+```bash
+# Compilar o projeto
+mvn clean package
+
+# Executar o editor
+java -jar target/curriculo-editor.jar
+```
 </div>
 
 ---
