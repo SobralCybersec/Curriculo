@@ -2,9 +2,12 @@ package com.dev.view;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -19,20 +22,35 @@ public class PDFPreviewPanel extends JPanel {
     
     public PDFPreviewPanel() {
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createTitledBorder("Preview do PDF"));
+        setBackground(new Color(45, 45, 48));
+        setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(34, 34, 34), 1),
+            "Preview do PDF",
+            0, 0, new Font("Segoe UI", Font.BOLD, 12), new Color(175, 177, 179)
+        ));
         
         imageLabel = new PDFImageLabel();
         scrollPane = new JScrollPane(imageLabel);
-        scrollPane.getViewport().setBackground(Color.LIGHT_GRAY);
+        scrollPane.getViewport().setBackground(new Color(42, 42, 44));
+        scrollPane.setBorder(null);
         
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.add(new JLabel("Página:"));
+        topPanel.setBackground(new Color(45, 45, 48));
+        
+        JLabel pageLabel = new JLabel("Página:");
+        pageLabel.setForeground(new Color(175, 177, 179));
+        topPanel.add(pageLabel);
+        
         pageSelector = new JComboBox<>();
+        pageSelector.setBackground(new Color(26, 26, 26));
+        pageSelector.setForeground(new Color(175, 177, 179));
         pageSelector.addActionListener(e -> renderCurrentPage());
         topPanel.add(pageSelector);
         
         topPanel.add(Box.createHorizontalStrut(20));
         magnifierToggle = new JCheckBox("Lupa", true);
+        magnifierToggle.setBackground(new Color(45, 45, 48));
+        magnifierToggle.setForeground(new Color(175, 177, 179));
         magnifierToggle.addActionListener(e -> imageLabel.setMagnifierEnabled(magnifierToggle.isSelected()));
         topPanel.add(magnifierToggle);
         
@@ -107,6 +125,9 @@ public class PDFPreviewPanel extends JPanel {
             super("Nenhum PDF carregado", SwingConstants.CENTER);
             setVerticalAlignment(SwingConstants.CENTER);
             setHorizontalAlignment(SwingConstants.CENTER);
+            setForeground(new Color(175, 177, 179));
+            setBackground(new Color(42, 42, 44));
+            setOpaque(true);
             
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
@@ -196,11 +217,11 @@ public class PDFPreviewPanel extends JPanel {
                             g2d.drawImage(magnified, magnifierX, magnifierY, MAGNIFIER_SIZE, MAGNIFIER_SIZE, null);
                             
                             g2d.setClip(null);
-                            g2d.setColor(new Color(50, 50, 50));
+                            g2d.setColor(new Color(34, 34, 34));
                             g2d.setStroke(new BasicStroke(4));
                             g2d.drawOval(magnifierX, magnifierY, MAGNIFIER_SIZE, MAGNIFIER_SIZE);
                             
-                            g2d.setColor(Color.WHITE);
+                            g2d.setColor(new Color(175, 177, 179));
                             g2d.setStroke(new BasicStroke(2));
                             g2d.drawOval(magnifierX + 2, magnifierY + 2, MAGNIFIER_SIZE - 4, MAGNIFIER_SIZE - 4);
                         }

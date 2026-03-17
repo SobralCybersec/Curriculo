@@ -1,6 +1,6 @@
 package com.dev.util;
 
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 public class LatexGenerator {
@@ -19,6 +19,26 @@ public class LatexGenerator {
         
         if (model.getRowCount() > 0 && model.getValueAt(0, 0) != null) {
             sb.append(model.getValueAt(0, 0).toString());
+        }
+        
+        sb.append("\n\\end{cvparagraph}\n");
+        return sb.toString();
+    }
+    
+    public static String generateSummaryFromText(String text) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("%-------------------------------------------------------------------------------\n");
+        sb.append("%\tSECTION TITLE\n");
+        sb.append("%-------------------------------------------------------------------------------\n");
+        sb.append("\\cvsection{Perfil Profissional}\n\n\n");
+        sb.append("%-------------------------------------------------------------------------------\n");
+        sb.append("%\tCONTENT\n");
+        sb.append("%-------------------------------------------------------------------------------\n");
+        sb.append("\\begin{cvparagraph}\n\n");
+        sb.append("%---------------------------------------------------------\n");
+        
+        if (text != null && !text.trim().isEmpty()) {
+            sb.append(text.trim());
         }
         
         sb.append("\n\\end{cvparagraph}\n");

@@ -39,8 +39,8 @@ Este repositório reúne estudos aprofundados sobre currículos modernos, com fo
 
 ---
 
-<img src="https://i.imgur.com/WffZ8ym.png">
-<img src="https://i.imgur.com/S5orImC.png">
+<img src="https://i.imgur.com/cIDPaXs.png">
+<img src="https://i.imgur.com/9A3jxwr.png">
 
 --- 
 
@@ -93,11 +93,13 @@ Este repositório reúne estudos aprofundados sobre currículos modernos, com fo
 
     2- SOLID, Clean Code, Design Patterns aplicados
 
-    3- Java Swing com temas customizáveis
+    3- Java Swing com temas customizáveis e componentes UI modernos
 
-    4- Integração com Apache PDFBox 2.0.30
+    4- Componentes visuais customizados (RoundedScrollPane, BannerPanel, IconFactory)
 
-    5- Compilação automática via XeLaTeX
+    5- Integração com Apache PDFBox 2.0.30
+
+    6- Compilação automática via XeLaTeX
 </div>
 
 <div>
@@ -120,6 +122,12 @@ Este repositório reúne estudos aprofundados sobre currículos modernos, com fo
     8- Upload e gerenciamento de foto de perfil
 
     9- Seletor de cores RGB para tema do currículo
+
+    10- Componentes UI customizados com bordas arredondadas
+
+    11- Banners informativos com ícones e animações
+
+    12- Interface moderna com ScrollPanes personalizados
 </div>
 
 <div>
@@ -168,6 +176,9 @@ Editor gráfico para facilitar a edição de currículos LaTeX sem precisar edit
 
 **Distribuição LaTeX (TeX Live)**
 [https://www.tug.org/texlive](https://www.tug.org/texlive)
+
+**JavaFX Dark Theme (Antonio Pelusi)**
+[https://github.com/antoniopelusi/JavaFX-Dark-Theme](https://github.com/antoniopelusi/JavaFX-Dark-Theme)
 
 </div>
 

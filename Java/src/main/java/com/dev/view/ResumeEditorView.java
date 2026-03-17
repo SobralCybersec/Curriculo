@@ -1,17 +1,27 @@
 package com.dev.view;
 
 import com.dev.service.ResumeService;
-import com.dev.util.*;
+import com.dev.util.AnimationUtil;
+import com.dev.util.LatexGenerator;
+import com.dev.util.LatexParser;
+import com.dev.view.components.*;
+
 import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.event.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
 
 public class ResumeEditorView extends JFrame {
     private final ResumeService service;
     private JTextArea mainTexArea;
+    private JTextArea summaryTexArea;
+    private JTextArea educationTexArea;
+    private JTextArea experienceTexArea;
+    private JTextArea skillsTexArea;
     private JTextField nameField, positionField, mobileField, emailField, githubField, linkedinField;
     private JTable summaryTable, educationTable, experienceTable, skillsTable;
     private JTextArea eduDescArea, expDescArea;
@@ -26,74 +36,160 @@ public class ResumeEditorView extends JFrame {
     }
     
     private void initUI() {
-        setTitle("Currículo Maker");
+        setTitle("Currículo Maker - Editor Profissional");
         setSize(1600, 900);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setUndecorated(false);
+        getContentPane().setBackground(new Color(45, 45, 48));
+        
+        JPanel mainContainer = new JPanel(new BorderLayout(0, 10));
+        mainContainer.setBackground(new Color(45, 45, 48));
+        mainContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        JPanel cardPanel = new JPanel(new CardLayout());
+        cardPanel.setBackground(new Color(45, 45, 48));
+        
+        JPanel personalPanel = createPersonalPanel();
+        JPanel summaryPanel = createSummaryPanel();
+        JPanel educationPanel = createEducationPanel();
+        JPanel experiencePanel = createExperiencePanel();
+        JPanel skillsPanel = createSkillsPanel();
+        optionsPanel = new OptionsPanel();
+        JPanel mainTexPanel = createLatexTabbedPanel();
+        
+        cardPanel.add(personalPanel, "personal");
+        cardPanel.add(summaryPanel, "summary");
+        cardPanel.add(educationPanel, "education");
+        cardPanel.add(experiencePanel, "experience");
+        cardPanel.add(skillsPanel, "skills");
+        cardPanel.add(optionsPanel, "options");
+        cardPanel.add(mainTexPanel, "latex");
+        cardPanel.add(new CreditsPanel(), "credits");
+        
+        CardLayout cardLayout = (CardLayout) cardPanel.getLayout();
+        
+        SideMenu sideMenu = new SideMenu();
+        sideMenu.addMenuItem("Dados Pessoais", "person", "Informações pessoais", () -> cardLayout.show(cardPanel, "personal"));
+        sideMenu.addMenuItem("Resumo", "document", "Resumo profissional", () -> cardLayout.show(cardPanel, "summary"));
+        sideMenu.addMenuItem("Educação", "education", "Formação acadêmica", () -> cardLayout.show(cardPanel, "education"));
+        sideMenu.addMenuItem("Experiência", "briefcase", "Experiência profissional", () -> cardLayout.show(cardPanel, "experience"));
+        sideMenu.addMenuItem("Habilidades", "lightning", "Competências técnicas", () -> cardLayout.show(cardPanel, "skills"));
+        sideMenu.addMenuItem("Opções", "settings", "Configurações", () -> cardLayout.show(cardPanel, "options"));
+        sideMenu.addMenuItem("LaTeX", "code", "Código LaTeX", () -> cardLayout.show(cardPanel, "latex"));
+        sideMenu.addMenuItem("Créditos", "info", "Sobre o projeto", () -> cardLayout.show(cardPanel, "credits"));
+        sideMenu.addCredits("v1.2", "Matheus Sobral");
+        
+        JPanel contentPanel = new JPanel(new BorderLayout(10, 0));
+        contentPanel.setBackground(new Color(45, 45, 48));
+        contentPanel.add(sideMenu, BorderLayout.WEST);
         
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setDividerLocation(950);
         splitPane.setResizeWeight(0.6);
+        splitPane.setBorder(null);
+        splitPane.setDividerSize(8);
+        splitPane.setBackground(new Color(45, 45, 48));
         
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Dados Pessoais", createPersonalPanel());
-        tabs.addTab("Resumo", createSummaryPanel());
-        tabs.addTab("Educação", createEducationPanel());
-        tabs.addTab("Experiência", createExperiencePanel());
-        tabs.addTab("Habilidades", createSkillsPanel());
-        tabs.addTab("Opções", optionsPanel = new OptionsPanel());
-        tabs.addTab("Main (resume.tex)", createTextPanel(mainTexArea = new JTextArea()));
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                int width = getWidth();
+                splitPane.setDividerLocation((int)(width * 0.6));
+            }
+        });
         
         pdfPreview = new PDFPreviewPanel();
         
-        splitPane.setLeftComponent(tabs);
+        splitPane.setLeftComponent(cardPanel);
         splitPane.setRightComponent(pdfPreview);
         
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton loadBtn = new JButton("Carregar");
-        JButton saveBtn = new JButton("Salvar");
-        JButton compileBtn = new JButton("Compilar PDF");
+        contentPanel.add(splitPane, BorderLayout.CENTER);
         
-        loadBtn.addActionListener(e -> loadFiles());
-        saveBtn.addActionListener(e -> saveAndPreview());
-        compileBtn.addActionListener(e -> compilePDF());
+        ModernPanel bottomPanel = new ModernPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        
+        ModernButton loadBtn = new ModernButton("  Carregar", IconFactory.createLoadIcon(16, new Color(220, 220, 220)));
+        ModernButton saveBtn = new ModernButton("  Salvar", IconFactory.createSaveIcon(16, new Color(220, 220, 220)));
+        ModernButton compileBtn = new ModernButton("  Compilar PDF", IconFactory.createCompileIcon(16, new Color(220, 220, 220)));
+        
+        loadBtn.setPreferredSize(new Dimension(140, 42));
+        saveBtn.setPreferredSize(new Dimension(140, 42));
+        compileBtn.setPreferredSize(new Dimension(160, 42));
+        
+        loadBtn.setToolTipText("Carregar arquivos LaTeX existentes");
+        saveBtn.setToolTipText("Salvar alterações nos arquivos");
+        compileBtn.setToolTipText("Compilar e exportar PDF");
+        
+        loadBtn.addActionListener(e -> {
+            AnimationUtil.pulse(loadBtn, 200);
+            loadFiles();
+        });
+        saveBtn.addActionListener(e -> {
+            AnimationUtil.pulse(saveBtn, 200);
+            saveAndPreview();
+        });
+        compileBtn.addActionListener(e -> {
+            AnimationUtil.pulse(compileBtn, 200);
+            compilePDF();
+        });
         
         bottomPanel.add(loadBtn);
         bottomPanel.add(saveBtn);
         bottomPanel.add(compileBtn);
         
-        add(splitPane, BorderLayout.CENTER);
-        add(bottomPanel, BorderLayout.SOUTH);
+        mainContainer.add(contentPanel, BorderLayout.CENTER);
+        mainContainer.add(bottomPanel, BorderLayout.SOUTH);
+        
+        add(mainContainer);
     }
     
     private JPanel createPersonalPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
+        ModernPanel panel = new ModernPanel(new BorderLayout(0, 15));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        BannerPanel banner = new BannerPanel("Dados Pessoais", "Informações básicas do seu currículo profissional", "https://i.imgur.com/zUoqZij.png");
+        panel.add(banner, BorderLayout.NORTH);
+        
+        ModernPanel formPanel = new ModernPanel(new GridBagLayout());
+        
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(8, 8, 8, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         
-        nameField = addField(panel, "Nome Completo:", gbc, 0);
+        nameField = addModernField(formPanel, "Nome Completo:", gbc, 0);
         
         gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
-        panel.add(new JLabel("Cargos:"), gbc);
+        JLabel posLabel = new JLabel("Cargos:");
+        posLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        posLabel.setForeground(new Color(175, 177, 179));
+        formPanel.add(posLabel, gbc);
         gbc.gridx = 1; gbc.weightx = 1;
-        positionField = new JTextField(30);
+        
+        positionField = new ModernTextField();
         positionField.setEditable(false);
-        panel.add(positionField, gbc);
+        positionField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        positionField.setPreferredSize(new Dimension(0, 40));
+        
+        formPanel.add(positionField, gbc);
         gbc.gridx = 2; gbc.weightx = 0;
-        JButton addPosBtn = new JButton("+");
+        ModernButton addPosBtn = new ModernButton("", IconFactory.createPlusIcon(16, new Color(220, 220, 220)));
+        addPosBtn.setPreferredSize(new Dimension(45, 35));
+        addPosBtn.setToolTipText("Adicionar cargo");
         addPosBtn.addActionListener(e -> {
+            AnimationUtil.pulse(addPosBtn, 200);
             String newPos = JOptionPane.showInputDialog(this, "Digite o cargo:");
             if (newPos != null && !newPos.trim().isEmpty()) {
                 positions.add(newPos.trim());
                 positionField.setText(String.join(" | ", positions));
             }
         });
-        panel.add(addPosBtn, gbc);
+        formPanel.add(addPosBtn, gbc);
         gbc.gridx = 3; gbc.weightx = 0;
-        JButton removePosBtn = new JButton("-");
+        ModernButton removePosBtn = new ModernButton("", IconFactory.createMinusIcon(16, new Color(220, 220, 220)));
+        removePosBtn.setPreferredSize(new Dimension(45, 35));
+        removePosBtn.setToolTipText("Remover cargo");
         removePosBtn.addActionListener(e -> {
             if (positions.isEmpty()) return;
+            AnimationUtil.pulse(removePosBtn, 200);
             String[] posArray = positions.toArray(new String[0]);
             String selected = (String) JOptionPane.showInputDialog(this, "Selecione o cargo para remover:", 
                 "Remover Cargo", JOptionPane.PLAIN_MESSAGE, null, posArray, posArray[0]);
@@ -102,75 +198,283 @@ public class ResumeEditorView extends JFrame {
                 positionField.setText(String.join(" | ", positions));
             }
         });
-        panel.add(removePosBtn, gbc);
+        formPanel.add(removePosBtn, gbc);
         
-        mobileField = addField(panel, "Telefone:", gbc, 2);
-        emailField = addField(panel, "Email:", gbc, 3);
-        githubField = addField(panel, "GitHub:", gbc, 4);
-        linkedinField = addField(panel, "LinkedIn:", gbc, 5);
+        mobileField = addModernField(formPanel, "Telefone:", gbc, 2);
+        emailField = addModernField(formPanel, "Email:", gbc, 3);
+        githubField = addModernField(formPanel, "GitHub:", gbc, 4);
+        linkedinField = addModernField(formPanel, "LinkedIn:", gbc, 5);
+        
+        panel.add(formPanel, BorderLayout.CENTER);
         
         return panel;
     }
     
     private JTextField addField(JPanel panel, String label, GridBagConstraints gbc, int row) {
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        panel.add(new JLabel(label), gbc);
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        panel.add(lbl, gbc);
         gbc.gridx = 1; gbc.weightx = 1;
         JTextField field = new JTextField(30);
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         panel.add(field, gbc);
         return field;
     }
     
-    private JPanel createTextPanel(JTextArea area) {
+    private JTextField addModernField(JPanel panel, String label, GridBagConstraints gbc, int row) {
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lbl.setForeground(new Color(175, 177, 179));
+        panel.add(lbl, gbc);
+        gbc.gridx = 1; gbc.weightx = 1; gbc.gridwidth = 3;
+        
+        ModernTextField field = new ModernTextField();
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        field.setPreferredSize(new Dimension(0, 40));
+        
+        panel.add(field, gbc);
+        gbc.gridwidth = 1;
+        return field;
+    }
+    
+    private JPanel createLatexTabbedPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(45, 45, 48));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        JTabbedPane tabbedPane = new JTabbedPane() {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(26, 26, 26));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                g2.setColor(new Color(34, 34, 34));
+                g2.setStroke(new BasicStroke(1));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 15, 15);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        tabbedPane.setOpaque(false);
+        tabbedPane.setBackground(new Color(26, 26, 26));
+        tabbedPane.setForeground(new Color(175, 177, 179));
+        tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        tabbedPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        
+        mainTexArea = new JTextArea();
+        summaryTexArea = new JTextArea();
+        educationTexArea = new JTextArea();
+        experienceTexArea = new JTextArea();
+        skillsTexArea = new JTextArea();
+        
+        tabbedPane.addTab("main.tex", createTexEditorPanel(mainTexArea));
+        tabbedPane.addTab("summary.tex", createTexEditorPanel(summaryTexArea));
+        tabbedPane.addTab("education.tex", createTexEditorPanel(educationTexArea));
+        tabbedPane.addTab("experience.tex", createTexEditorPanel(experienceTexArea));
+        tabbedPane.addTab("skills.tex", createTexEditorPanel(skillsTexArea));
+        
+        panel.add(tabbedPane, BorderLayout.CENTER);
+        return panel;
+    }
+    
+    private JPanel createTexEditorPanel(JTextArea area) {
         area.setFont(new Font("Monospaced", Font.PLAIN, 12));
         area.setTabSize(2);
-        JScrollPane scroll = new JScrollPane(area);
+        area.setBackground(new Color(26, 26, 26));
+        area.setForeground(new Color(175, 177, 179));
+        area.setCaretColor(new Color(175, 177, 179));
+        area.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        RoundedScrollPane scroll = new RoundedScrollPane(area);
+        scroll.setBackground(new Color(26, 26, 26));
+        scroll.getViewport().setBackground(new Color(26, 26, 26));
+        
         JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(45, 45, 48));
         panel.add(scroll);
         return panel;
     }
     
     private JPanel createSummaryPanel() {
+        ModernPanel mainPanel = new ModernPanel(new BorderLayout(0, 15));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        BannerPanel banner = new BannerPanel("Perfil Profissional", "Destaque suas principais qualificações e objetivos", "https://i.imgur.com/AROBkTg.png");
+        mainPanel.add(banner, BorderLayout.NORTH);
+        
         String[] cols = {"Resumo Profissional"};
         DefaultTableModel model = new DefaultTableModel(cols, 0);
-        summaryTable = new JTable(model);
-        summaryTable.setRowHeight(100);
-        return createTablePanel(summaryTable, model);
+        summaryTable = new JTable(model) {
+            @Override
+            public javax.swing.table.TableCellRenderer getCellRenderer(int row, int column) {
+                return new javax.swing.table.DefaultTableCellRenderer() {
+                    @Override
+                    public Component getTableCellRendererComponent(JTable table, Object value,
+                            boolean isSelected, boolean hasFocus, int row, int column) {
+                        JTextArea textArea = new JTextArea();
+                        textArea.setText(value != null ? value.toString() : "");
+                        textArea.setWrapStyleWord(true);
+                        textArea.setLineWrap(true);
+                        textArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+                        textArea.setBackground(isSelected ? new Color(62, 62, 64) : new Color(26, 26, 26));
+                        textArea.setForeground(new Color(175, 177, 179));
+                        textArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+                        return textArea;
+                    }
+                };
+            }
+            
+            @Override
+            public javax.swing.table.TableCellEditor getCellEditor(int row, int column) {
+                JTextArea textArea = new JTextArea();
+                textArea.setWrapStyleWord(true);
+                textArea.setLineWrap(true);
+                textArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+                textArea.setBackground(new Color(26, 26, 26));
+                textArea.setForeground(new Color(175, 177, 179));
+                textArea.setCaretColor(new Color(175, 177, 179));
+                textArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+                
+                return new javax.swing.DefaultCellEditor(new JTextField()) {
+                    @Override
+                    public Component getTableCellEditorComponent(JTable table, Object value,
+                            boolean isSelected, int row, int column) {
+                        textArea.setText(value != null ? value.toString() : "");
+                        return new JScrollPane(textArea);
+                    }
+                    
+                    @Override
+                    public Object getCellEditorValue() {
+                        return textArea.getText();
+                    }
+                };
+            }
+        };
+        summaryTable.setRowHeight(200);
+        ModernPanel contentPanel = new ModernPanel(new BorderLayout(10, 10));
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        
+        summaryTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        summaryTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        summaryTable.setBackground(new Color(26, 26, 26));
+        summaryTable.setForeground(new Color(175, 177, 179));
+        summaryTable.setGridColor(new Color(34, 34, 34));
+        summaryTable.setSelectionBackground(new Color(62, 62, 64));
+        summaryTable.setSelectionForeground(new Color(175, 177, 179));
+        summaryTable.getTableHeader().setBackground(new Color(26, 26, 26));
+        summaryTable.getTableHeader().setForeground(new Color(175, 177, 179));
+        summaryTable.setShowGrid(true);
+        summaryTable.setIntercellSpacing(new Dimension(1, 1));
+        
+        RoundedScrollPane scroll = new RoundedScrollPane(summaryTable);
+        scroll.setBackground(new Color(26, 26, 26));
+        scroll.getViewport().setBackground(new Color(26, 26, 26));
+        scroll.setPreferredSize(new Dimension(0, 400));
+        
+        contentPanel.add(scroll, BorderLayout.CENTER);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        
+        return mainPanel;
     }
     
     private JPanel createEducationPanel() {
+        ModernPanel mainPanel = new ModernPanel(new BorderLayout(0, 15));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        BannerPanel banner = new BannerPanel("Educação", "Sua formação acadêmica e certificações", "https://i.imgur.com/0zpdhsj.png");
+        mainPanel.add(banner, BorderLayout.NORTH);
+        
         String[] cols = {"Grau", "Instituição", "Local", "Período"};
         DefaultTableModel model = new DefaultTableModel(cols, 0);
         educationTable = new JTable(model);
         eduDescArea = new JTextArea(10, 50);
-        return createEntryPanel(educationTable, model, eduDescArea);
+        
+        JPanel entryPanel = createEntryPanel(educationTable, model, eduDescArea);
+        mainPanel.add(entryPanel, BorderLayout.CENTER);
+        
+        return mainPanel;
     }
     
     private JPanel createExperiencePanel() {
+        ModernPanel mainPanel = new ModernPanel(new BorderLayout(0, 15));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        BannerPanel banner = new BannerPanel("Experiência Profissional", "Seu histórico de trabalho e conquistas", "https://i.imgur.com/DPghpwl.png");
+        mainPanel.add(banner, BorderLayout.NORTH);
+        
         String[] cols = {"Cargo", "Empresa", "Local", "Período"};
         DefaultTableModel model = new DefaultTableModel(cols, 0);
         experienceTable = new JTable(model);
         expDescArea = new JTextArea(10, 50);
-        return createEntryPanel(experienceTable, model, expDescArea);
+        
+        JPanel entryPanel = createEntryPanel(experienceTable, model, expDescArea);
+        mainPanel.add(entryPanel, BorderLayout.CENTER);
+        
+        return mainPanel;
     }
     
     private JPanel createSkillsPanel() {
+        ModernPanel mainPanel = new ModernPanel(new BorderLayout(0, 15));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        BannerPanel banner = new BannerPanel("Habilidades", "Suas competências técnicas e soft skills", "https://i.imgur.com/NiHnCJp.png");
+        mainPanel.add(banner, BorderLayout.NORTH);
+        
         String[] cols = {"Categoria", "Habilidades"};
         DefaultTableModel model = new DefaultTableModel(cols, 0);
         skillsTable = new JTable(model);
-        return createTablePanel(skillsTable, model);
+        
+        JPanel tablePanel = createTablePanel(skillsTable, model);
+        mainPanel.add(tablePanel, BorderLayout.CENTER);
+        
+        return mainPanel;
     }
     
     private JPanel createEntryPanel(JTable table, DefaultTableModel model, JTextArea descArea) {
-        JPanel mainPanel = new JPanel(new BorderLayout(5, 5));
-        JScrollPane tableScroll = new JScrollPane(table);
-        tableScroll.setPreferredSize(new Dimension(0, 150));
+        ModernPanel mainPanel = new ModernPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         
-        descArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        table.setRowHeight(28);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        table.setBackground(new Color(26, 26, 26));
+        table.setForeground(new Color(175, 177, 179));
+        table.setGridColor(new Color(34, 34, 34));
+        table.setSelectionBackground(new Color(62, 62, 64));
+        table.setSelectionForeground(new Color(175, 177, 179));
+        table.getTableHeader().setBackground(new Color(26, 26, 26));
+        table.getTableHeader().setForeground(new Color(175, 177, 179));
+        table.setShowGrid(true);
+        table.setIntercellSpacing(new Dimension(1, 1));
+        
+        RoundedScrollPane tableScroll = new RoundedScrollPane(table);
+        tableScroll.setPreferredSize(new Dimension(0, 180));
+        tableScroll.setBackground(new Color(26, 26, 26));
+        tableScroll.getViewport().setBackground(new Color(26, 26, 26));
+        
+        descArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         descArea.setLineWrap(true);
         descArea.setWrapStyleWord(true);
-        JScrollPane descScroll = new JScrollPane(descArea);
-        descScroll.setBorder(BorderFactory.createTitledBorder("Descrição (um bullet point por linha)"));
+        descArea.setBackground(new Color(26, 26, 26));
+        descArea.setForeground(new Color(175, 177, 179));
+        descArea.setCaretColor(new Color(175, 177, 179));
+        descArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        RoundedScrollPane descScroll = new RoundedScrollPane(descArea);
+        descScroll.setBackground(new Color(26, 26, 26));
+        descScroll.getViewport().setBackground(new Color(26, 26, 26));
+        
+        ModernPanel descPanel = new ModernPanel(new BorderLayout());
+        descPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        
+        JLabel descLabel = new JLabel("Descrição (um bullet point por linha)");
+        descLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        descLabel.setForeground(new Color(175, 177, 179));
+        descLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 0));
+        descPanel.add(descLabel, BorderLayout.NORTH);
+        descPanel.add(descScroll, BorderLayout.CENTER);
         
         table.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -189,18 +493,23 @@ public class ResumeEditorView extends JFrame {
             void update() {
                 int row = table.getSelectedRow();
                 if (row >= 0) {
-                    while (model.getColumnCount() <= 4) model.addColumn("Descrição");
+                    while (model.getColumnCount() <= 4) model.addColumn("Descricao");
                     model.setValueAt(descArea.getText(), row, 4);
                 }
             }
         });
         
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton addBtn = new JButton("Adicionar");
-        JButton removeBtn = new JButton("Remover");
+        ModernPanel btnPanel = new ModernPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        
+        ModernButton addBtn = new ModernButton("  Adicionar", IconFactory.createPlusIcon(14, new Color(220, 220, 220)));
+        ModernButton removeBtn = new ModernButton("  Remover", IconFactory.createMinusIcon(14, new Color(220, 220, 220)));
+        
+        addBtn.setPreferredSize(new Dimension(140, 40));
+        removeBtn.setPreferredSize(new Dimension(140, 40));
         
         addBtn.addActionListener(e -> {
-            while (model.getColumnCount() <= 4) model.addColumn("Descrição");
+            AnimationUtil.pulse(addBtn, 200);
+            while (model.getColumnCount() <= 4) model.addColumn("Descricao");
             model.addRow(new Object[model.getColumnCount()]);
             table.setRowSelectionInterval(model.getRowCount() - 1, model.getRowCount() - 1);
         });
@@ -208,6 +517,7 @@ public class ResumeEditorView extends JFrame {
         removeBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row >= 0) {
+                AnimationUtil.pulse(removeBtn, 200);
                 model.removeRow(row);
                 descArea.setText("");
             }
@@ -217,25 +527,52 @@ public class ResumeEditorView extends JFrame {
         btnPanel.add(removeBtn);
         
         mainPanel.add(tableScroll, BorderLayout.NORTH);
-        mainPanel.add(descScroll, BorderLayout.CENTER);
+        mainPanel.add(descPanel, BorderLayout.CENTER);
         mainPanel.add(btnPanel, BorderLayout.SOUTH);
         
         return mainPanel;
     }
     
     private JPanel createTablePanel(JTable table, DefaultTableModel model) {
-        JPanel panel = new JPanel(new BorderLayout());
-        JScrollPane scroll = new JScrollPane(table);
+        ModernPanel panel = new ModernPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        table.setRowHeight(28);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        table.setBackground(new Color(26, 26, 26));
+        table.setForeground(new Color(175, 177, 179));
+        table.setGridColor(new Color(34, 34, 34));
+        table.setSelectionBackground(new Color(62, 62, 64));
+        table.setSelectionForeground(new Color(175, 177, 179));
+        table.getTableHeader().setBackground(new Color(26, 26, 26));
+        table.getTableHeader().setForeground(new Color(175, 177, 179));
+        table.setShowGrid(true);
+        table.setIntercellSpacing(new Dimension(1, 1));
+        
+        RoundedScrollPane scroll = new RoundedScrollPane(table);
+        scroll.setBackground(new Color(26, 26, 26));
+        scroll.getViewport().setBackground(new Color(26, 26, 26));
         panel.add(scroll, BorderLayout.CENTER);
         
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton addBtn = new JButton("Adicionar");
-        JButton removeBtn = new JButton("Remover");
+        ModernPanel btnPanel = new ModernPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         
-        addBtn.addActionListener(e -> model.addRow(new Object[model.getColumnCount()]));
+        ModernButton addBtn = new ModernButton("  Adicionar", IconFactory.createPlusIcon(14, new Color(220, 220, 220)));
+        ModernButton removeBtn = new ModernButton("  Remover", IconFactory.createMinusIcon(14, new Color(220, 220, 220)));
+        
+        addBtn.setPreferredSize(new Dimension(140, 40));
+        removeBtn.setPreferredSize(new Dimension(140, 40));
+        
+        addBtn.addActionListener(e -> {
+            AnimationUtil.pulse(addBtn, 200);
+            model.addRow(new Object[model.getColumnCount()]);
+        });
         removeBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
-            if (row >= 0) model.removeRow(row);
+            if (row >= 0) {
+                AnimationUtil.pulse(removeBtn, 200);
+                model.removeRow(row);
+            }
         });
         
         btnPanel.add(addBtn);
@@ -248,12 +585,17 @@ public class ResumeEditorView extends JFrame {
     private void loadFiles() {
         try {
             mainTexArea.setText(service.loadMainTex());
+            summaryTexArea.setText(service.loadSummaryTex());
+            educationTexArea.setText(service.loadEducationTex());
+            experienceTexArea.setText(service.loadExperienceTex());
+            skillsTexArea.setText(service.loadSkillsTex());
+            
             parsePersonalInfo(mainTexArea.getText());
             parseOptions(mainTexArea.getText());
-            LatexParser.parseSummary(service.loadSummaryTex(), (DefaultTableModel) summaryTable.getModel());
-            LatexParser.parseEducation(service.loadEducationTex(), (DefaultTableModel) educationTable.getModel());
-            LatexParser.parseExperience(service.loadExperienceTex(), (DefaultTableModel) experienceTable.getModel());
-            LatexParser.parseSkills(service.loadSkillsTex(), (DefaultTableModel) skillsTable.getModel());
+            LatexParser.parseSummary(summaryTexArea.getText(), (DefaultTableModel) summaryTable.getModel());
+            LatexParser.parseEducation(educationTexArea.getText(), (DefaultTableModel) educationTable.getModel());
+            LatexParser.parseExperience(experienceTexArea.getText(), (DefaultTableModel) experienceTable.getModel());
+            LatexParser.parseSkills(skillsTexArea.getText(), (DefaultTableModel) skillsTable.getModel());
             JOptionPane.showMessageDialog(this, "Arquivos carregados!");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erro ao carregar: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);

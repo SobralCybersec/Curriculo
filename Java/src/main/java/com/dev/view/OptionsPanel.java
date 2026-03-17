@@ -1,17 +1,21 @@
 package com.dev.view;
 
+import com.dev.view.components.ModernButton;
+
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
+import java.awt.geom.RoundRectangle2D;
+import java.util.HashMap;
+import java.util.Map;
 
 public class OptionsPanel extends JPanel {
     private JTextField quoteField;
     private JCheckBox quoteEnabled;
     private JCheckBox photoEnabled;
     private JTextField photoPathField;
-    private JButton photoUploadBtn;
+    private ModernButton photoUploadBtn;
     private JComboBox<String> photoFormatCombo;
-    private JButton colorPickerBtn;
+    private ModernButton colorPickerBtn;
     private JLabel colorPreview;
     private String selectedColor = "2B0A3D";
     private Map<String, JTextField> socialFields;
@@ -19,46 +23,140 @@ public class OptionsPanel extends JPanel {
     
     public OptionsPanel() {
         setLayout(new BorderLayout());
+        setBackground(new Color(45, 45, 48));
         
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.WEST;
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBackground(new Color(45, 45, 48));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
-        quoteEnabled = new JCheckBox("Frase:");
-        mainPanel.add(quoteEnabled, gbc);
+        mainPanel.add(createQuoteSection());
+        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(createPhotoSection());
+        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(createColorSection());
+        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(createSocialPanel());
+        mainPanel.add(Box.createVerticalGlue());
         
-        gbc.gridx = 1; gbc.weightx = 1;
-        quoteField = new JTextField(30);
+        JScrollPane scroll = new JScrollPane(mainPanel);
+        scroll.setBorder(null);
+        scroll.getViewport().setBackground(new Color(45, 45, 48));
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        add(scroll, BorderLayout.CENTER);
+    }
+    
+    private JPanel createRoundedSection(LayoutManager layout) {
+        return new JPanel(layout) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(26, 26, 26));
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 15, 15));
+                g2.setColor(new Color(34, 34, 34));
+                g2.setStroke(new BasicStroke(1));
+                g2.draw(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, 15, 15));
+                g2.dispose();
+            }
+        };
+    }
+
+    private JPanel createQuoteSection() {
+        JPanel section = createRoundedSection(new BorderLayout(10, 10));
+        section.setOpaque(false);
+        section.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        section.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+        
+        JLabel titleLabel = new JLabel("Frase Motivacional");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(192, 202, 245));
+        
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.setOpaque(false);
+        quoteEnabled = new JCheckBox("Habilitar");
+        quoteEnabled.setOpaque(false);
+        quoteEnabled.setForeground(new Color(175, 177, 179));
+        topPanel.add(titleLabel);
+        topPanel.add(Box.createHorizontalStrut(20));
+        topPanel.add(quoteEnabled);
+        
+        quoteField = new JTextField();
         quoteField.setEnabled(false);
-        mainPanel.add(quoteField, gbc);
+        quoteField.setBackground(new Color(26, 26, 26));
+        quoteField.setForeground(new Color(175, 177, 179));
+        quoteField.setCaretColor(new Color(175, 177, 179));
+        quoteField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(34, 34, 34), 1),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        ));
         
         quoteEnabled.addActionListener(e -> quoteField.setEnabled(quoteEnabled.isSelected()));
         
-        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0; gbc.gridwidth = 1;
-        photoEnabled = new JCheckBox("Foto:");
-        mainPanel.add(photoEnabled, gbc);
+        section.add(topPanel, BorderLayout.NORTH);
+        section.add(quoteField, BorderLayout.CENTER);
         
-        gbc.gridx = 1; gbc.weightx = 1;
-        photoPathField = new JTextField(20);
+        return section;
+    }
+    
+    private JPanel createPhotoSection() {
+        JPanel section = createRoundedSection(null);
+        section.setLayout(new BoxLayout(section, BoxLayout.Y_AXIS));
+        section.setOpaque(false);
+        section.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        section.setMaximumSize(new Dimension(Integer.MAX_VALUE, 180));
+        
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        headerPanel.setOpaque(false);
+        JLabel titleLabel = new JLabel("Foto de Perfil");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(192, 202, 245));
+        photoEnabled = new JCheckBox("Habilitar");
+        photoEnabled.setOpaque(false);
+        photoEnabled.setForeground(new Color(175, 177, 179));
+        headerPanel.add(titleLabel);
+        headerPanel.add(Box.createHorizontalStrut(20));
+        headerPanel.add(photoEnabled);
+        section.add(headerPanel);
+        section.add(Box.createVerticalStrut(10));
+        
+        JPanel pathPanel = new JPanel(new BorderLayout(10, 0));
+        pathPanel.setOpaque(false);
+        pathPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        
+        photoPathField = new JTextField();
         photoPathField.setEnabled(false);
         photoPathField.setEditable(false);
-        mainPanel.add(photoPathField, gbc);
+        photoPathField.setBackground(new Color(26, 26, 26));
+        photoPathField.setForeground(new Color(175, 177, 179));
+        photoPathField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(34, 34, 34), 1),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        ));
         
-        gbc.gridx = 2; gbc.weightx = 0;
-        photoUploadBtn = new JButton("Upload");
+        photoUploadBtn = new ModernButton("Selecionar Arquivo");
         photoUploadBtn.setEnabled(false);
-        mainPanel.add(photoUploadBtn, gbc);
+        photoUploadBtn.setPreferredSize(new Dimension(150, 40));
+        photoUploadBtn.addActionListener(e -> selectPhoto());
         
-        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 1;
-        mainPanel.add(new JLabel("Formato:"), gbc);
+        pathPanel.add(photoPathField, BorderLayout.CENTER);
+        pathPanel.add(photoUploadBtn, BorderLayout.EAST);
+        section.add(pathPanel);
+        section.add(Box.createVerticalStrut(10));
         
-        gbc.gridx = 1; gbc.gridwidth = 2;
+        JPanel formatPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        formatPanel.setOpaque(false);
+        formatPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        JLabel formatLabel = new JLabel("Formato:");
+        formatLabel.setForeground(new Color(175, 177, 179));
         photoFormatCombo = new JComboBox<>(new String[]{"Padrão", "Retângulo", "Circular", "Lado Direito"});
         photoFormatCombo.setEnabled(false);
-        mainPanel.add(photoFormatCombo, gbc);
+        photoFormatCombo.setBackground(new Color(26, 26, 26));
+        photoFormatCombo.setForeground(new Color(175, 177, 179));
+        photoFormatCombo.setPreferredSize(new Dimension(200, 35));
+        formatPanel.add(formatLabel);
+        formatPanel.add(Box.createHorizontalStrut(10));
+        formatPanel.add(photoFormatCombo);
+        section.add(formatPanel);
         
         photoEnabled.addActionListener(e -> {
             boolean enabled = photoEnabled.isSelected();
@@ -67,39 +165,56 @@ public class OptionsPanel extends JPanel {
             photoFormatCombo.setEnabled(enabled);
         });
         
-        photoUploadBtn.addActionListener(e -> selectPhoto());
+        return section;
+    }
+    
+    private JPanel createColorSection() {
+        JPanel section = createRoundedSection(new BorderLayout(10, 10));
+        section.setOpaque(false);
+        section.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        section.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
         
-        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 1; gbc.weightx = 0;
-        mainPanel.add(new JLabel("Cor Tema:"), gbc);
+        JLabel titleLabel = new JLabel("Cor do Tema");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(192, 202, 245));
         
-        gbc.gridx = 1; gbc.weightx = 0;
-        colorPickerBtn = new JButton("Escolher Cor");
-        mainPanel.add(colorPickerBtn, gbc);
+        JPanel contentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        contentPanel.setOpaque(false);
         
-        gbc.gridx = 2; gbc.weightx = 0;
-        colorPreview = new JLabel("      ");
-        colorPreview.setOpaque(true);
-        colorPreview.setBackground(Color.decode("#" + selectedColor));
-        colorPreview.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        mainPanel.add(colorPreview, gbc);
-        
+        colorPickerBtn = new ModernButton("Escolher Cor");
+        colorPickerBtn.setPreferredSize(new Dimension(150, 40));
         colorPickerBtn.addActionListener(e -> selectColor());
         
-        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 3;
-        mainPanel.add(createSocialPanel(), gbc);
+        colorPreview = new JLabel("        ");
+        colorPreview.setOpaque(true);
+        colorPreview.setBackground(Color.decode("#" + selectedColor));
+        colorPreview.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(34, 34, 34), 2),
+            BorderFactory.createEmptyBorder(15, 30, 15, 30)
+        ));
         
-        gbc.gridy = 5; gbc.weighty = 1;
-        mainPanel.add(Box.createVerticalGlue(), gbc);
+        contentPanel.add(colorPickerBtn);
+        contentPanel.add(colorPreview);
         
-        JScrollPane scroll = new JScrollPane(mainPanel);
-        scroll.setBorder(null);
-        add(scroll, BorderLayout.CENTER);
+        section.add(titleLabel, BorderLayout.NORTH);
+        section.add(contentPanel, BorderLayout.CENTER);
+        
+        return section;
     }
     
     private JPanel createSocialPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(BorderFactory.createTitledBorder("Redes Sociais Adicionais"));
+        JPanel section = createRoundedSection(null);
+        section.setLayout(new BoxLayout(section, BoxLayout.Y_AXIS));
+        section.setOpaque(false);
+        section.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        section.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        
+        JLabel titleLabel = new JLabel("Redes Sociais Adicionais");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(192, 202, 245));
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        section.add(titleLabel);
+        section.add(Box.createVerticalStrut(15));
         
         socialFields = new HashMap<>();
         socialCheckboxes = new HashMap<>();
@@ -109,30 +224,38 @@ public class OptionsPanel extends JPanel {
             "reddit", "medium", "kaggle", "hackerrank", "telegram"
         };
         
-        JPanel grid = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 5, 2, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        
-        for (int i = 0; i < socials.length; i++) {
-            String social = socials[i];
+        for (String social : socials) {
+            JPanel row = new JPanel(new BorderLayout(10, 0));
+            row.setOpaque(false);
+            row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
             
-            gbc.gridx = 0; gbc.gridy = i; gbc.weightx = 0;
-            JCheckBox checkbox = new JCheckBox(capitalize(social) + ":");
+            JCheckBox checkbox = new JCheckBox(capitalize(social));
+            checkbox.setOpaque(false);
+            checkbox.setForeground(new Color(175, 177, 179));
+            checkbox.setPreferredSize(new Dimension(150, 35));
             socialCheckboxes.put(social, checkbox);
-            grid.add(checkbox, gbc);
             
-            gbc.gridx = 1; gbc.weightx = 1;
-            JTextField field = new JTextField(20);
+            JTextField field = new JTextField();
             field.setEnabled(false);
+            field.setBackground(new Color(26, 26, 26));
+            field.setForeground(new Color(175, 177, 179));
+            field.setCaretColor(new Color(175, 177, 179));
+            field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(34, 34, 34), 1),
+                BorderFactory.createEmptyBorder(8, 10, 8, 10)
+            ));
             socialFields.put(social, field);
-            grid.add(field, gbc);
             
             checkbox.addActionListener(e -> field.setEnabled(checkbox.isSelected()));
+            
+            row.add(checkbox, BorderLayout.WEST);
+            row.add(field, BorderLayout.CENTER);
+            
+            section.add(row);
+            section.add(Box.createVerticalStrut(8));
         }
         
-        panel.add(grid);
-        return panel;
+        return section;
     }
     
     private String capitalize(String str) {
