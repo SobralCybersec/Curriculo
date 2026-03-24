@@ -5,6 +5,7 @@ import java.awt.*;
 
 public class ModernPanel extends JPanel {
     private int cornerRadius = 15;
+
     
     public ModernPanel() {
         setOpaque(false);
@@ -45,4 +46,5 @@ public class ModernPanel extends JPanel {
     public void setGradient(Color start, Color end) {
         // Mantido para compatibilidade
     }
+
 }

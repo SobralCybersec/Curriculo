@@ -132,7 +132,7 @@ public class CreditsPanel extends JPanel {
     }
 
     private void addFooter(JPanel panel) {
-        JLabel versionLabel = new JLabel("Versão 1.2");
+        JLabel versionLabel = new JLabel("Versão 1.3");
         versionLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
         versionLabel.setForeground(new Color(120, 120, 120));
         versionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);

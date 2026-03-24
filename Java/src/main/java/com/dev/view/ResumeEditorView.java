@@ -78,7 +78,7 @@ public class ResumeEditorView extends JFrame {
         sideMenu.addMenuItem("Opções", "settings", "Configurações", () -> cardLayout.show(cardPanel, "options"));
         sideMenu.addMenuItem("LaTeX", "code", "Código LaTeX", () -> cardLayout.show(cardPanel, "latex"));
         sideMenu.addMenuItem("Créditos", "info", "Sobre o projeto", () -> cardLayout.show(cardPanel, "credits"));
-        sideMenu.addCredits("v1.2", "Matheus Sobral");
+        sideMenu.addCredits("v1.3", "Matheus Sobral");
         
         JPanel contentPanel = new JPanel(new BorderLayout(10, 0));
         contentPanel.setBackground(new Color(45, 45, 48));
@@ -120,15 +120,15 @@ public class ResumeEditorView extends JFrame {
         compileBtn.setToolTipText("Compilar e exportar PDF");
         
         loadBtn.addActionListener(e -> {
-            AnimationUtil.pulse(loadBtn, 200);
+            // AnimationUtil.pulse(loadBtn, 200);
             loadFiles();
         });
         saveBtn.addActionListener(e -> {
-            AnimationUtil.pulse(saveBtn, 200);
+            // AnimationUtil.pulse(saveBtn, 200);
             saveAndPreview();
         });
         compileBtn.addActionListener(e -> {
-            AnimationUtil.pulse(compileBtn, 200);
+            // AnimationUtil.pulse(compileBtn, 200);
             compilePDF();
         });
         
@@ -150,7 +150,7 @@ public class ResumeEditorView extends JFrame {
         panel.add(banner, BorderLayout.NORTH);
         
         ModernPanel formPanel = new ModernPanel(new GridBagLayout());
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -207,7 +207,17 @@ public class ResumeEditorView extends JFrame {
         
         panel.add(formPanel, BorderLayout.CENTER);
         
-        return panel;
+        RoundedScrollPane scrollPane = new RoundedScrollPane(panel);
+        scrollPane.setBorder(null);
+        scrollPane.getViewport().setBackground(new Color(45, 45, 48));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(new Color(45, 45, 48));
+        wrapper.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        wrapper.add(scrollPane, BorderLayout.CENTER);
+
+        return wrapper;
     }
     
     private JTextField addField(JPanel panel, String label, GridBagConstraints gbc, int row) {
@@ -375,8 +385,18 @@ public class ResumeEditorView extends JFrame {
         
         contentPanel.add(scroll, BorderLayout.CENTER);
         mainPanel.add(contentPanel, BorderLayout.CENTER);
-        
-        return mainPanel;
+
+        RoundedScrollPane scrollPane = new RoundedScrollPane(mainPanel);
+        scrollPane.setBorder(null);
+        scrollPane.getViewport().setBackground(new Color(45, 45, 48));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(new Color(45, 45, 48));
+        wrapper.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        wrapper.add(scrollPane, BorderLayout.CENTER);
+
+        return wrapper;
     }
     
     private JPanel createEducationPanel() {
@@ -394,7 +414,17 @@ public class ResumeEditorView extends JFrame {
         JPanel entryPanel = createEntryPanel(educationTable, model, eduDescArea);
         mainPanel.add(entryPanel, BorderLayout.CENTER);
         
-        return mainPanel;
+        RoundedScrollPane scrollPane = new RoundedScrollPane(mainPanel);
+        scrollPane.setBorder(null);
+        scrollPane.getViewport().setBackground(new Color(45, 45, 48));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(new Color(45, 45, 48));
+        wrapper.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        wrapper.add(scrollPane, BorderLayout.CENTER);
+
+        return wrapper;
     }
     
     private JPanel createExperiencePanel() {
@@ -412,13 +442,29 @@ public class ResumeEditorView extends JFrame {
         JPanel entryPanel = createEntryPanel(experienceTable, model, expDescArea);
         mainPanel.add(entryPanel, BorderLayout.CENTER);
         
-        return mainPanel;
+        RoundedScrollPane scrollPane = new RoundedScrollPane(mainPanel);
+        scrollPane.setBorder(null);
+        scrollPane.getViewport().setBackground(new Color(45, 45, 48));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(new Color(45, 45, 48));
+        wrapper.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        wrapper.add(scrollPane, BorderLayout.CENTER);
+
+        return wrapper;
     }
     
     private JPanel createSkillsPanel() {
         ModernPanel mainPanel = new ModernPanel(new BorderLayout(0, 15));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        
+
+        JScrollPane scroll = new JScrollPane(mainPanel);
+        scroll.setBorder(null);
+        scroll.getViewport().setBackground(new Color(45, 45, 48));
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        add(scroll, BorderLayout.CENTER);
+
         BannerPanel banner = new BannerPanel("Habilidades", "Suas competências técnicas e soft skills", "https://i.imgur.com/NiHnCJp.png");
         mainPanel.add(banner, BorderLayout.NORTH);
         
@@ -428,8 +474,18 @@ public class ResumeEditorView extends JFrame {
         
         JPanel tablePanel = createTablePanel(skillsTable, model);
         mainPanel.add(tablePanel, BorderLayout.CENTER);
-        
-        return mainPanel;
+
+        RoundedScrollPane scrollPane = new RoundedScrollPane(mainPanel);
+        scrollPane.setBorder(null);
+        scrollPane.getViewport().setBackground(new Color(45, 45, 48));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(new Color(45, 45, 48));
+        wrapper.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        wrapper.add(scrollPane, BorderLayout.CENTER);
+
+        return wrapper;
     }
     
     private JPanel createEntryPanel(JTable table, DefaultTableModel model, JTextArea descArea) {
