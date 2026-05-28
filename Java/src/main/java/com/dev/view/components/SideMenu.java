@@ -1,5 +1,6 @@
 package com.dev.view.components;
 
+import com.dev.util.UITheme;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -11,8 +12,8 @@ public class SideMenu extends JPanel {
     private List<MenuButton> menuButtons;
     private List<JPanel> creditsPanels = new ArrayList<>();
     private boolean expanded = false;
-    private int collapsedWidth = 70;
-    private int expandedWidth = 240;
+    private int collapsedWidth = UITheme.SIDE_MENU_COLLAPSED_W;
+    private int expandedWidth = UITheme.SIDE_MENU_EXPANDED_W;
     private JPanel buttonPanel;
     private JButton toggleButton;
     private javax.swing.Timer animationTimer;
@@ -32,10 +33,10 @@ public class SideMenu extends JPanel {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
                 
-                g2.setColor(new Color(26, 26, 26));
+                g2.setColor(UITheme.SURFACE);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
                 
-                g2.setColor(new Color(34, 34, 34));
+                g2.setColor(UITheme.BORDER);
                 g2.setStroke(new BasicStroke(1));
                 g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 20, 20);
                 
@@ -84,24 +85,23 @@ public class SideMenu extends JPanel {
         toggleButton.setFocusPainted(false);
         toggleButton.setBorderPainted(false);
         toggleButton.setContentAreaFilled(false);
-        toggleButton.setForeground(new Color(175, 177, 179));
+        toggleButton.setForeground(UITheme.FOREGROUND);
         toggleButton.setOpaque(false);
         toggleButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         toggleButton.setPreferredSize(new Dimension(collapsedWidth, 60));
         toggleButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
-        toggleButton.setToolTipText("Expandir/Recolher Menu");
         toggleButton.addActionListener(e -> toggleMenu());
         
         toggleButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                toggleButton.setForeground(new Color(122, 162, 247));
+                toggleButton.setForeground(UITheme.ACCENT);
                 toggleButton.repaint();
             }
             
             @Override
             public void mouseExited(MouseEvent e) {
-                toggleButton.setForeground(new Color(175, 177, 179));
+                toggleButton.setForeground(UITheme.FOREGROUND);
                 toggleButton.repaint();
             }
         });
@@ -134,7 +134,7 @@ public class SideMenu extends JPanel {
 
         JLabel versionLabel = new JLabel(version);
         versionLabel.setFont(new Font("Segoe UI", Font.BOLD, 10));
-        versionLabel.setForeground(new Color(122, 162, 247));
+        versionLabel.setForeground(UITheme.ACCENT);
         versionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel authorLabel = new JLabel(author);
@@ -229,13 +229,13 @@ public class SideMenu extends JPanel {
                     int size = 20;
                     
                     if (isHovered && !isExpanded) {
-                        g2.setColor(new Color(62, 62, 64));
+                        g2.setColor(UITheme.SELECTED);
                         g2.fillRoundRect(centerX - 20, centerY - 20, 40, 40, 10, 10);
-                        g2.setColor(new Color(122, 162, 247, 50));
+                        g2.setColor(new Color(UITheme.ACCENT.getRed(), UITheme.ACCENT.getGreen(), UITheme.ACCENT.getBlue(), 50));
                         g2.fillRoundRect(centerX - 20, centerY - 20, 40, 40, 10, 10);
                     }
                     
-                    Color iconColor = isHovered ? new Color(122, 162, 247) : new Color(175, 177, 179);
+                    Color iconColor = isHovered ? UITheme.ACCENT : UITheme.FOREGROUND;
                     g2.setColor(iconColor);
                     g2.setStroke(new BasicStroke(2.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                     
@@ -251,7 +251,7 @@ public class SideMenu extends JPanel {
             
             textLabel = new JLabel(text);
             textLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
-            textLabel.setForeground(new Color(175, 177, 179));
+            textLabel.setForeground(UITheme.FOREGROUND);
             textLabel.setVisible(false);
             add(textLabel, BorderLayout.CENTER);
             
@@ -260,9 +260,9 @@ public class SideMenu extends JPanel {
                 public void mouseEntered(MouseEvent e) {
                     isHovered = true;
                     if (isExpanded) {
-                        setBackground(new Color(62, 62, 64));
+                        setBackground(UITheme.SELECTED);
                     }
-                    textLabel.setForeground(new Color(122, 162, 247));
+                    textLabel.setForeground(UITheme.ACCENT);
                     iconPanel.repaint();
                     repaint();
                 }
@@ -270,8 +270,8 @@ public class SideMenu extends JPanel {
                 @Override
                 public void mouseExited(MouseEvent e) {
                     isHovered = false;
-                    setBackground(new Color(26, 26, 26));
-                    textLabel.setForeground(new Color(175, 177, 179));
+                    setBackground(UITheme.SURFACE);
+                    textLabel.setForeground(UITheme.FOREGROUND);
                     iconPanel.repaint();
                     repaint();
                 }
@@ -352,10 +352,10 @@ public class SideMenu extends JPanel {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             
             if (isHovered && isExpanded) {
-                g2.setColor(new Color(62, 62, 64));
+                g2.setColor(UITheme.SELECTED);
                 g2.fillRoundRect(5, 5, getWidth() - 10, getHeight() - 10, 10, 10);
                 
-                g2.setColor(new Color(122, 162, 247, 50));
+                g2.setColor(new Color(UITheme.ACCENT.getRed(), UITheme.ACCENT.getGreen(), UITheme.ACCENT.getBlue(), 50));
                 g2.fillRoundRect(5, 5, getWidth() - 10, getHeight() - 10, 10, 10);
             }
             

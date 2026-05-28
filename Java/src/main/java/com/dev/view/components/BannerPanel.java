@@ -1,5 +1,6 @@
 package com.dev.view.components;
 
+import com.dev.util.UITheme;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -17,8 +18,8 @@ public class BannerPanel extends JPanel {
     public BannerPanel(String title, String subtitle) {
         this.title = title;
         this.subtitle = subtitle;
-        this.gradientStart = new Color(62, 62, 64);
-        this.gradientEnd = new Color(26, 26, 26);
+        this.gradientStart = UITheme.SELECTED;
+        this.gradientEnd = UITheme.SURFACE;
         
         setPreferredSize(new Dimension(0, 120));
         setOpaque(false);
@@ -29,8 +30,8 @@ public class BannerPanel extends JPanel {
     public BannerPanel(String title, String subtitle, String imageUrl) {
         this.title = title;
         this.subtitle = subtitle;
-        this.gradientStart = new Color(62, 62, 64);
-        this.gradientEnd = new Color(26, 26, 26);
+        this.gradientStart = UITheme.SELECTED;
+        this.gradientEnd = UITheme.SURFACE;
         
         setPreferredSize(new Dimension(0, 120));
         setOpaque(false);
@@ -100,7 +101,6 @@ public class BannerPanel extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         
-        // Aplicar o gradiente
         GradientPaint gradient = new GradientPaint(
             0, 0, gradientStart,
             getWidth(), getHeight(), gradientEnd
@@ -108,7 +108,6 @@ public class BannerPanel extends JPanel {
         g2.setPaint(gradient);
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
         
-        // Desenhar a imagem de fundo
         if (backgroundImage != null) {
             g2.setClip(new java.awt.geom.RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 15, 15));
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, imageOpacity));
@@ -117,22 +116,19 @@ public class BannerPanel extends JPanel {
             g2.setClip(null);
         }
         
-        // Desenhar o título
-        g2.setColor(new Color(122, 162, 247));
+        g2.setColor(UITheme.ACCENT);
         g2.setFont(new Font("Segoe UI", Font.BOLD, 32));
         FontMetrics fm = g2.getFontMetrics();
         int titleY = (getHeight() - fm.getHeight()) / 2 + fm.getAscent() - 10;
         g2.drawString(title, 30, titleY);
         
-        // Desenhar o subtítulo
-        g2.setColor(new Color(200, 200, 200));
+        g2.setColor(UITheme.FOREGROUND);
         g2.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         fm = g2.getFontMetrics();
         int subtitleY = titleY + fm.getHeight() + 5;
         g2.drawString(subtitle, 30, subtitleY);
         
-        // Desenhar a linha abaixo do título
-        g2.setColor(new Color(122, 162, 247, 100));
+        g2.setColor(new Color(UITheme.ACCENT.getRed(), UITheme.ACCENT.getGreen(), UITheme.ACCENT.getBlue(), 100));
         g2.setStroke(new BasicStroke(3));
         g2.drawLine(30, getHeight() - 15, 200, getHeight() - 15);
         
