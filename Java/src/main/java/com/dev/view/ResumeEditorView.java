@@ -4,6 +4,7 @@ import com.dev.service.ResumeService;
 import com.dev.util.AnimationUtil;
 import com.dev.util.LatexGenerator;
 import com.dev.util.LatexParser;
+import com.dev.util.UITheme;
 import com.dev.view.components.*;
 
 import javax.swing.*;
@@ -37,18 +38,18 @@ public class ResumeEditorView extends JFrame {
     
     private void initUI() {
         setTitle("Currículo Maker - Editor Profissional");
-        setSize(1600, 900);
+        setSize(UITheme.WINDOW_WIDTH, UITheme.WINDOW_HEIGHT);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setUndecorated(false);
-        getContentPane().setBackground(new Color(45, 45, 48));
+        getContentPane().setBackground(UITheme.BACKGROUND);
         
         JPanel mainContainer = new JPanel(new BorderLayout(0, 10));
-        mainContainer.setBackground(new Color(45, 45, 48));
+        mainContainer.setBackground(UITheme.BACKGROUND);
         mainContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         JPanel cardPanel = new JPanel(new CardLayout());
-        cardPanel.setBackground(new Color(45, 45, 48));
+        cardPanel.setBackground(UITheme.BACKGROUND);
         
         JPanel personalPanel = createPersonalPanel();
         JPanel summaryPanel = createSummaryPanel();
@@ -81,7 +82,7 @@ public class ResumeEditorView extends JFrame {
         sideMenu.addCredits("v1.3", "Matheus Sobral");
         
         JPanel contentPanel = new JPanel(new BorderLayout(10, 0));
-        contentPanel.setBackground(new Color(45, 45, 48));
+        contentPanel.setBackground(UITheme.BACKGROUND);
         contentPanel.add(sideMenu, BorderLayout.WEST);
         
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -89,7 +90,7 @@ public class ResumeEditorView extends JFrame {
         splitPane.setResizeWeight(0.6);
         splitPane.setBorder(null);
         splitPane.setDividerSize(8);
-        splitPane.setBackground(new Color(45, 45, 48));
+        splitPane.setBackground(UITheme.BACKGROUND);
         
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
@@ -107,28 +108,21 @@ public class ResumeEditorView extends JFrame {
         
         ModernPanel bottomPanel = new ModernPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         
-        ModernButton loadBtn = new ModernButton("  Carregar", IconFactory.createLoadIcon(16, new Color(220, 220, 220)));
-        ModernButton saveBtn = new ModernButton("  Salvar", IconFactory.createSaveIcon(16, new Color(220, 220, 220)));
-        ModernButton compileBtn = new ModernButton("  Compilar PDF", IconFactory.createCompileIcon(16, new Color(220, 220, 220)));
+        ModernButton loadBtn = new ModernButton("  Carregar", IconFactory.createLoadIcon(16, UITheme.FOREGROUND));
+        ModernButton saveBtn = new ModernButton("  Salvar", IconFactory.createSaveIcon(16, UITheme.FOREGROUND));
+        ModernButton compileBtn = new ModernButton("  Compilar PDF", IconFactory.createCompileIcon(16, UITheme.FOREGROUND));
         
-        loadBtn.setPreferredSize(new Dimension(140, 42));
-        saveBtn.setPreferredSize(new Dimension(140, 42));
-        compileBtn.setPreferredSize(new Dimension(160, 42));
-        
-        loadBtn.setToolTipText("Carregar arquivos LaTeX existentes");
-        saveBtn.setToolTipText("Salvar alterações nos arquivos");
-        compileBtn.setToolTipText("Compilar e exportar PDF");
+        loadBtn.setPreferredSize(new Dimension(140, UITheme.BUTTON_HEIGHT));
+        saveBtn.setPreferredSize(new Dimension(140, UITheme.BUTTON_HEIGHT));
+        compileBtn.setPreferredSize(new Dimension(160, UITheme.BUTTON_HEIGHT));
         
         loadBtn.addActionListener(e -> {
-            // AnimationUtil.pulse(loadBtn, 200);
             loadFiles();
         });
         saveBtn.addActionListener(e -> {
-            // AnimationUtil.pulse(saveBtn, 200);
             saveAndPreview();
         });
         compileBtn.addActionListener(e -> {
-            // AnimationUtil.pulse(compileBtn, 200);
             compilePDF();
         });
         
@@ -160,7 +154,7 @@ public class ResumeEditorView extends JFrame {
         gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
         JLabel posLabel = new JLabel("Cargos:");
         posLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        posLabel.setForeground(new Color(175, 177, 179));
+        posLabel.setForeground(UITheme.FOREGROUND);
         formPanel.add(posLabel, gbc);
         gbc.gridx = 1; gbc.weightx = 1;
         
@@ -171,11 +165,10 @@ public class ResumeEditorView extends JFrame {
         
         formPanel.add(positionField, gbc);
         gbc.gridx = 2; gbc.weightx = 0;
-        ModernButton addPosBtn = new ModernButton("", IconFactory.createPlusIcon(16, new Color(220, 220, 220)));
+        ModernButton addPosBtn = new ModernButton("", IconFactory.createPlusIcon(16, UITheme.FOREGROUND));
         addPosBtn.setPreferredSize(new Dimension(45, 35));
-        addPosBtn.setToolTipText("Adicionar cargo");
         addPosBtn.addActionListener(e -> {
-            AnimationUtil.pulse(addPosBtn, 200);
+            AnimationUtil.pulse(addPosBtn, UITheme.PULSE_DURATION_MS);
             String newPos = JOptionPane.showInputDialog(this, "Digite o cargo:");
             if (newPos != null && !newPos.trim().isEmpty()) {
                 positions.add(newPos.trim());
@@ -184,12 +177,11 @@ public class ResumeEditorView extends JFrame {
         });
         formPanel.add(addPosBtn, gbc);
         gbc.gridx = 3; gbc.weightx = 0;
-        ModernButton removePosBtn = new ModernButton("", IconFactory.createMinusIcon(16, new Color(220, 220, 220)));
+        ModernButton removePosBtn = new ModernButton("", IconFactory.createMinusIcon(16, UITheme.FOREGROUND));
         removePosBtn.setPreferredSize(new Dimension(45, 35));
-        removePosBtn.setToolTipText("Remover cargo");
         removePosBtn.addActionListener(e -> {
             if (positions.isEmpty()) return;
-            AnimationUtil.pulse(removePosBtn, 200);
+            AnimationUtil.pulse(removePosBtn, UITheme.PULSE_DURATION_MS);
             String[] posArray = positions.toArray(new String[0]);
             String selected = (String) JOptionPane.showInputDialog(this, "Selecione o cargo para remover:", 
                 "Remover Cargo", JOptionPane.PLAIN_MESSAGE, null, posArray, posArray[0]);
@@ -207,36 +199,14 @@ public class ResumeEditorView extends JFrame {
         
         panel.add(formPanel, BorderLayout.CENTER);
         
-        RoundedScrollPane scrollPane = new RoundedScrollPane(panel);
-        scrollPane.setBorder(null);
-        scrollPane.getViewport().setBackground(new Color(45, 45, 48));
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(new Color(45, 45, 48));
-        wrapper.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        wrapper.add(scrollPane, BorderLayout.CENTER);
-
-        return wrapper;
-    }
-    
-    private JTextField addField(JPanel panel, String label, GridBagConstraints gbc, int row) {
-        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        JLabel lbl = new JLabel(label);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        panel.add(lbl, gbc);
-        gbc.gridx = 1; gbc.weightx = 1;
-        JTextField field = new JTextField(30);
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        panel.add(field, gbc);
-        return field;
+        return UITheme.wrapInScrollPanel(panel);
     }
     
     private JTextField addModernField(JPanel panel, String label, GridBagConstraints gbc, int row) {
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
         JLabel lbl = new JLabel(label);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lbl.setForeground(new Color(175, 177, 179));
+        lbl.setForeground(UITheme.FOREGROUND);
         panel.add(lbl, gbc);
         gbc.gridx = 1; gbc.weightx = 1; gbc.gridwidth = 3;
         
@@ -251,16 +221,16 @@ public class ResumeEditorView extends JFrame {
     
     private JPanel createLatexTabbedPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(new Color(45, 45, 48));
+        panel.setBackground(UITheme.BACKGROUND);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
         JTabbedPane tabbedPane = new JTabbedPane() {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(26, 26, 26));
+                g2.setColor(UITheme.SURFACE);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
-                g2.setColor(new Color(34, 34, 34));
+                g2.setColor(UITheme.BORDER);
                 g2.setStroke(new BasicStroke(1));
                 g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 15, 15);
                 g2.dispose();
@@ -268,8 +238,8 @@ public class ResumeEditorView extends JFrame {
             }
         };
         tabbedPane.setOpaque(false);
-        tabbedPane.setBackground(new Color(26, 26, 26));
-        tabbedPane.setForeground(new Color(175, 177, 179));
+        tabbedPane.setBackground(UITheme.SURFACE);
+        tabbedPane.setForeground(UITheme.FOREGROUND);
         tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 12));
         tabbedPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
@@ -292,17 +262,17 @@ public class ResumeEditorView extends JFrame {
     private JPanel createTexEditorPanel(JTextArea area) {
         area.setFont(new Font("Monospaced", Font.PLAIN, 12));
         area.setTabSize(2);
-        area.setBackground(new Color(26, 26, 26));
-        area.setForeground(new Color(175, 177, 179));
-        area.setCaretColor(new Color(175, 177, 179));
+        area.setBackground(UITheme.SURFACE);
+        area.setForeground(UITheme.FOREGROUND);
+        area.setCaretColor(UITheme.FOREGROUND);
         area.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         RoundedScrollPane scroll = new RoundedScrollPane(area);
-        scroll.setBackground(new Color(26, 26, 26));
-        scroll.getViewport().setBackground(new Color(26, 26, 26));
+        scroll.setBackground(UITheme.SURFACE);
+        scroll.getViewport().setBackground(UITheme.SURFACE);
         
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(new Color(45, 45, 48));
+        panel.setBackground(UITheme.BACKGROUND);
         panel.add(scroll);
         return panel;
     }
@@ -328,8 +298,8 @@ public class ResumeEditorView extends JFrame {
                         textArea.setWrapStyleWord(true);
                         textArea.setLineWrap(true);
                         textArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-                        textArea.setBackground(isSelected ? new Color(62, 62, 64) : new Color(26, 26, 26));
-                        textArea.setForeground(new Color(175, 177, 179));
+                        textArea.setBackground(isSelected ? UITheme.SELECTED : UITheme.SURFACE);
+                        textArea.setForeground(UITheme.FOREGROUND);
                         textArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                         return textArea;
                     }
@@ -342,9 +312,9 @@ public class ResumeEditorView extends JFrame {
                 textArea.setWrapStyleWord(true);
                 textArea.setLineWrap(true);
                 textArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-                textArea.setBackground(new Color(26, 26, 26));
-                textArea.setForeground(new Color(175, 177, 179));
-                textArea.setCaretColor(new Color(175, 177, 179));
+                textArea.setBackground(UITheme.SURFACE);
+                textArea.setForeground(UITheme.FOREGROUND);
+                textArea.setCaretColor(UITheme.FOREGROUND);
                 textArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                 
                 return new javax.swing.DefaultCellEditor(new JTextField()) {
@@ -366,37 +336,17 @@ public class ResumeEditorView extends JFrame {
         ModernPanel contentPanel = new ModernPanel(new BorderLayout(10, 10));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         
-        summaryTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        summaryTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
-        summaryTable.setBackground(new Color(26, 26, 26));
-        summaryTable.setForeground(new Color(175, 177, 179));
-        summaryTable.setGridColor(new Color(34, 34, 34));
-        summaryTable.setSelectionBackground(new Color(62, 62, 64));
-        summaryTable.setSelectionForeground(new Color(175, 177, 179));
-        summaryTable.getTableHeader().setBackground(new Color(26, 26, 26));
-        summaryTable.getTableHeader().setForeground(new Color(175, 177, 179));
-        summaryTable.setShowGrid(true);
-        summaryTable.setIntercellSpacing(new Dimension(1, 1));
+        UITheme.styleTable(summaryTable);
         
         RoundedScrollPane scroll = new RoundedScrollPane(summaryTable);
-        scroll.setBackground(new Color(26, 26, 26));
-        scroll.getViewport().setBackground(new Color(26, 26, 26));
+        scroll.setBackground(UITheme.SURFACE);
+        scroll.getViewport().setBackground(UITheme.SURFACE);
         scroll.setPreferredSize(new Dimension(0, 400));
         
         contentPanel.add(scroll, BorderLayout.CENTER);
         mainPanel.add(contentPanel, BorderLayout.CENTER);
 
-        RoundedScrollPane scrollPane = new RoundedScrollPane(mainPanel);
-        scrollPane.setBorder(null);
-        scrollPane.getViewport().setBackground(new Color(45, 45, 48));
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(new Color(45, 45, 48));
-        wrapper.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        wrapper.add(scrollPane, BorderLayout.CENTER);
-
-        return wrapper;
+        return UITheme.wrapInScrollPanel(mainPanel);
     }
     
     private JPanel createEducationPanel() {
@@ -414,17 +364,7 @@ public class ResumeEditorView extends JFrame {
         JPanel entryPanel = createEntryPanel(educationTable, model, eduDescArea);
         mainPanel.add(entryPanel, BorderLayout.CENTER);
         
-        RoundedScrollPane scrollPane = new RoundedScrollPane(mainPanel);
-        scrollPane.setBorder(null);
-        scrollPane.getViewport().setBackground(new Color(45, 45, 48));
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(new Color(45, 45, 48));
-        wrapper.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
-        wrapper.add(scrollPane, BorderLayout.CENTER);
-
-        return wrapper;
+        return UITheme.wrapInScrollPanel(mainPanel);
     }
     
     private JPanel createExperiencePanel() {
@@ -442,28 +382,12 @@ public class ResumeEditorView extends JFrame {
         JPanel entryPanel = createEntryPanel(experienceTable, model, expDescArea);
         mainPanel.add(entryPanel, BorderLayout.CENTER);
         
-        RoundedScrollPane scrollPane = new RoundedScrollPane(mainPanel);
-        scrollPane.setBorder(null);
-        scrollPane.getViewport().setBackground(new Color(45, 45, 48));
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(new Color(45, 45, 48));
-        wrapper.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
-        wrapper.add(scrollPane, BorderLayout.CENTER);
-
-        return wrapper;
+        return UITheme.wrapInScrollPanel(mainPanel);
     }
     
     private JPanel createSkillsPanel() {
         ModernPanel mainPanel = new ModernPanel(new BorderLayout(0, 15));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        JScrollPane scroll = new JScrollPane(mainPanel);
-        scroll.setBorder(null);
-        scroll.getViewport().setBackground(new Color(45, 45, 48));
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
-        add(scroll, BorderLayout.CENTER);
 
         BannerPanel banner = new BannerPanel("Habilidades", "Suas competências técnicas e soft skills", "https://i.imgur.com/NiHnCJp.png");
         mainPanel.add(banner, BorderLayout.NORTH);
@@ -475,59 +399,38 @@ public class ResumeEditorView extends JFrame {
         JPanel tablePanel = createTablePanel(skillsTable, model);
         mainPanel.add(tablePanel, BorderLayout.CENTER);
 
-        RoundedScrollPane scrollPane = new RoundedScrollPane(mainPanel);
-        scrollPane.setBorder(null);
-        scrollPane.getViewport().setBackground(new Color(45, 45, 48));
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(new Color(45, 45, 48));
-        wrapper.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
-        wrapper.add(scrollPane, BorderLayout.CENTER);
-
-        return wrapper;
+        return UITheme.wrapInScrollPanel(mainPanel);
     }
     
     private JPanel createEntryPanel(JTable table, DefaultTableModel model, JTextArea descArea) {
         ModernPanel mainPanel = new ModernPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        table.setRowHeight(28);
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
-        table.setBackground(new Color(26, 26, 26));
-        table.setForeground(new Color(175, 177, 179));
-        table.setGridColor(new Color(34, 34, 34));
-        table.setSelectionBackground(new Color(62, 62, 64));
-        table.setSelectionForeground(new Color(175, 177, 179));
-        table.getTableHeader().setBackground(new Color(26, 26, 26));
-        table.getTableHeader().setForeground(new Color(175, 177, 179));
-        table.setShowGrid(true);
-        table.setIntercellSpacing(new Dimension(1, 1));
+        UITheme.styleTable(table);
         
         RoundedScrollPane tableScroll = new RoundedScrollPane(table);
         tableScroll.setPreferredSize(new Dimension(0, 180));
-        tableScroll.setBackground(new Color(26, 26, 26));
-        tableScroll.getViewport().setBackground(new Color(26, 26, 26));
+        tableScroll.setBackground(UITheme.SURFACE);
+        tableScroll.getViewport().setBackground(UITheme.SURFACE);
         
         descArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         descArea.setLineWrap(true);
         descArea.setWrapStyleWord(true);
-        descArea.setBackground(new Color(26, 26, 26));
-        descArea.setForeground(new Color(175, 177, 179));
-        descArea.setCaretColor(new Color(175, 177, 179));
+        descArea.setBackground(UITheme.SURFACE);
+        descArea.setForeground(UITheme.FOREGROUND);
+        descArea.setCaretColor(UITheme.FOREGROUND);
         descArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         RoundedScrollPane descScroll = new RoundedScrollPane(descArea);
-        descScroll.setBackground(new Color(26, 26, 26));
-        descScroll.getViewport().setBackground(new Color(26, 26, 26));
+        descScroll.setBackground(UITheme.SURFACE);
+        descScroll.getViewport().setBackground(UITheme.SURFACE);
         
         ModernPanel descPanel = new ModernPanel(new BorderLayout());
         descPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         
         JLabel descLabel = new JLabel("Descrição (um bullet point por linha)");
         descLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        descLabel.setForeground(new Color(175, 177, 179));
+        descLabel.setForeground(UITheme.FOREGROUND);
         descLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 0));
         descPanel.add(descLabel, BorderLayout.NORTH);
         descPanel.add(descScroll, BorderLayout.CENTER);
@@ -557,14 +460,14 @@ public class ResumeEditorView extends JFrame {
         
         ModernPanel btnPanel = new ModernPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         
-        ModernButton addBtn = new ModernButton("  Adicionar", IconFactory.createPlusIcon(14, new Color(220, 220, 220)));
-        ModernButton removeBtn = new ModernButton("  Remover", IconFactory.createMinusIcon(14, new Color(220, 220, 220)));
+        ModernButton addBtn = new ModernButton("  Adicionar", IconFactory.createPlusIcon(14, UITheme.FOREGROUND));
+        ModernButton removeBtn = new ModernButton("  Remover", IconFactory.createMinusIcon(14, UITheme.FOREGROUND));
         
         addBtn.setPreferredSize(new Dimension(140, 40));
         removeBtn.setPreferredSize(new Dimension(140, 40));
         
         addBtn.addActionListener(e -> {
-            AnimationUtil.pulse(addBtn, 200);
+            AnimationUtil.pulse(addBtn, UITheme.PULSE_DURATION_MS);
             while (model.getColumnCount() <= 4) model.addColumn("Descricao");
             model.addRow(new Object[model.getColumnCount()]);
             table.setRowSelectionInterval(model.getRowCount() - 1, model.getRowCount() - 1);
@@ -573,7 +476,7 @@ public class ResumeEditorView extends JFrame {
         removeBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row >= 0) {
-                AnimationUtil.pulse(removeBtn, 200);
+                AnimationUtil.pulse(removeBtn, UITheme.PULSE_DURATION_MS);
                 model.removeRow(row);
                 descArea.setText("");
             }
@@ -593,40 +496,29 @@ public class ResumeEditorView extends JFrame {
         ModernPanel panel = new ModernPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        table.setRowHeight(28);
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
-        table.setBackground(new Color(26, 26, 26));
-        table.setForeground(new Color(175, 177, 179));
-        table.setGridColor(new Color(34, 34, 34));
-        table.setSelectionBackground(new Color(62, 62, 64));
-        table.setSelectionForeground(new Color(175, 177, 179));
-        table.getTableHeader().setBackground(new Color(26, 26, 26));
-        table.getTableHeader().setForeground(new Color(175, 177, 179));
-        table.setShowGrid(true);
-        table.setIntercellSpacing(new Dimension(1, 1));
+        UITheme.styleTable(table);
         
         RoundedScrollPane scroll = new RoundedScrollPane(table);
-        scroll.setBackground(new Color(26, 26, 26));
-        scroll.getViewport().setBackground(new Color(26, 26, 26));
+        scroll.setBackground(UITheme.SURFACE);
+        scroll.getViewport().setBackground(UITheme.SURFACE);
         panel.add(scroll, BorderLayout.CENTER);
         
         ModernPanel btnPanel = new ModernPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         
-        ModernButton addBtn = new ModernButton("  Adicionar", IconFactory.createPlusIcon(14, new Color(220, 220, 220)));
-        ModernButton removeBtn = new ModernButton("  Remover", IconFactory.createMinusIcon(14, new Color(220, 220, 220)));
+        ModernButton addBtn = new ModernButton("  Adicionar", IconFactory.createPlusIcon(14, UITheme.FOREGROUND));
+        ModernButton removeBtn = new ModernButton("  Remover", IconFactory.createMinusIcon(14, UITheme.FOREGROUND));
         
         addBtn.setPreferredSize(new Dimension(140, 40));
         removeBtn.setPreferredSize(new Dimension(140, 40));
         
         addBtn.addActionListener(e -> {
-            AnimationUtil.pulse(addBtn, 200);
+            AnimationUtil.pulse(addBtn, UITheme.PULSE_DURATION_MS);
             model.addRow(new Object[model.getColumnCount()]);
         });
         removeBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row >= 0) {
-                AnimationUtil.pulse(removeBtn, 200);
+                AnimationUtil.pulse(removeBtn, UITheme.PULSE_DURATION_MS);
                 model.removeRow(row);
             }
         });
