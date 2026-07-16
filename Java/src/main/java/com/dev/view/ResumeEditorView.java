@@ -1,5 +1,6 @@
 package com.dev.view;
 
+import com.dev.BuildInfo;
 import com.dev.service.ResumeService;
 import com.dev.util.AnimationUtil;
 import com.dev.util.LatexGenerator;
@@ -84,7 +85,7 @@ public class ResumeEditorView extends JFrame {
         sideMenu.addMenuItem("Opções", "settings", "Configurações", () -> cardLayout.show(cardPanel, "options"));
         sideMenu.addMenuItem("LaTeX", "code", "Código LaTeX", () -> cardLayout.show(cardPanel, "latex"));
         sideMenu.addMenuItem("Créditos", "info", "Sobre o projeto", () -> cardLayout.show(cardPanel, "credits"));
-        sideMenu.addCredits("v1.3", "Matheus Sobral");
+        sideMenu.addCredits("v" + BuildInfo.version(), "Matheus Sobral");
         
         JPanel contentPanel = new JPanel(new BorderLayout(10, 0));
         contentPanel.setBackground(UITheme.BACKGROUND);

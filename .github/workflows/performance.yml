@@ -11,6 +11,8 @@ permissions:
 jobs:
   profile:
     runs-on: ubuntu-latest
+    env:
+      BUILD_VERSION: 1.3.0-dev.${{ github.sha }}
     defaults:
       run:
         working-directory: Java
@@ -25,6 +27,7 @@ jobs:
       - name: Profile deterministic test workload
         run: >-
           mvn --batch-mode --no-transfer-progress
+          -Drevision="$BUILD_VERSION"
           -DargLine="-XX:StartFlightRecording=filename=target/tests.jfr,dumponexit=true,settings=profile,maxsize=16m"
           test
       - name: Summarize Java Flight Recorder output

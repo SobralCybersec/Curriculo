@@ -18,6 +18,8 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    env:
+      BUILD_VERSION: 1.3.0-dev.${{ github.sha }}
     defaults:
       run:
         working-directory: Java
@@ -30,9 +32,9 @@ jobs:
           cache: maven
           cache-dependency-path: Java/pom.xml
       - name: Verify build requirements and tests
-        run: mvn --batch-mode --no-transfer-progress verify
+        run: mvn --batch-mode --no-transfer-progress -Drevision="$BUILD_VERSION" verify
       - name: Check compile-scope dependency declarations
-        run: mvn --batch-mode --no-transfer-progress dependency:analyze -DignoreNonCompile=true -DfailOnWarning=true
+        run: mvn --batch-mode --no-transfer-progress -Drevision="$BUILD_VERSION" dependency:analyze -DignoreNonCompile=true -DfailOnWarning=true
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4

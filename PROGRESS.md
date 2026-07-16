@@ -2,12 +2,13 @@
 
 ## Current goal
 
-- Improve Swing responsiveness on Linux/Wayland while keeping the existing Java 21 desktop distribution model.
+- Add deterministic per-commit build versions without CI mutating repository files.
 
 ## Files touched
 
 - `PROGRESS.md`
 - `Java/pom.xml`
+- `Java/src/main/java/com/dev/BuildInfo.java`
 - `Java/src/main/java/com/dev/Main.java`
 - `Java/src/main/java/com/dev/model/ResumeData.java` (deleted)
 - `Java/src/main/java/com/dev/service/ResumeService.java`
@@ -15,7 +16,9 @@
 - `Java/src/main/java/com/dev/view/ResumeEditorView.java`
 - `Java/src/main/java/com/dev/view/PDFPreviewPanel.java`
 - `Java/src/main/java/com/dev/view/OptionsPanel.java`
+- `Java/src/main/java/com/dev/view/CreditsPanel.java`
 - `Java/src/test/java/com/dev/service/ResumeServiceTest.java`
+- `Java/src/test/java/com/dev/BuildInfoTest.java`
 - `Java/src/test/java/com/dev/util/LatexParserTest.java`
 - `Java/src/test/java/com/dev/util/LatexGeneratorTest.java`
 - `Java/src/test/java/com/dev/util/LatexPropertyTest.java`
@@ -38,6 +41,8 @@
 - Render the 200 DPI magnifier image only when requested, flush discarded images, and coalesce hover repaints to one per 16 ms.
 - The Linux launcher only adds Wayland compositor compatibility when the session is Wayland; it preserves a caller-supplied override and requests GTK3.
 - CI remains Java 21/Maven based; release now ships the Linux launcher with the JAR and SHA-256 file.
+- Maven uses a CI-friendly `revision`: local builds remain `1.3.0-SNAPSHOT`, every CI build uses the commit SHA, and release tags supply the release version.
+- The packaged JAR manifest and the two visible version labels read the effective build version; CI never writes or commits a changed POM.
 
 ## Verified checks
 
@@ -48,10 +53,13 @@
 - [x] Ruby parsed all GitHub workflow YAML files.
 - [x] `rtk git diff --check`: no whitespace errors.
 - [x] Earlier performance baseline: 72 DPI A4 preview allocated 1.9 MB; the optional 200 DPI preview added 14.7 MB. Magnifier-off avoids that extra allocation.
+- [x] `rtk mvn --batch-mode --no-transfer-progress -f Java/pom.xml -Drevision=1.3.0-dev.0123456789abcdef verify`: 31 tests passed.
+- [x] Shaded JAR manifest contains `Implementation-Version: 1.3.0-dev.0123456789abcdef`.
 
 ## Remaining work
 
 - [x] Move PDF rendering off the EDT and add asynchronous preview regression coverage.
 - [x] Provide a Linux/Wayland launcher and attach it to releases.
+- [x] Generate unique commit-versioned CI artifacts and tag-versioned release artifacts without CI commits.
 - [ ] Future: make multi-file writes atomic; preserve compiler diagnostics and add a compiler timeout.
 - [ ] Environment: repair XeLaTeX format (`xelatex.fmt`) before end-to-end compile profiling.

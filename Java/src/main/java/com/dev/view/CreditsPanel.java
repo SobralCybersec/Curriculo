@@ -1,5 +1,6 @@
 package com.dev.view;
 
+import com.dev.BuildInfo;
 import com.dev.view.components.BannerPanel;
 import com.dev.view.components.ModernPanel;
 import com.dev.view.components.RoundedScrollPane;
@@ -132,7 +133,7 @@ public class CreditsPanel extends JPanel {
     }
 
     private void addFooter(JPanel panel) {
-        JLabel versionLabel = new JLabel("Versão 1.3");
+        JLabel versionLabel = new JLabel("Versão " + BuildInfo.version());
         versionLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
         versionLabel.setForeground(new Color(120, 120, 120));
         versionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);

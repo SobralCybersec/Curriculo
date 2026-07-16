@@ -16,6 +16,8 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      BUILD_VERSION: 1.3.0-dev.${{ github.sha }}
     defaults:
       run:
         working-directory: Java
@@ -28,11 +30,13 @@ jobs:
           cache: maven
           cache-dependency-path: Java/pom.xml
       - name: Verify
-        run: mvn --batch-mode --no-transfer-progress verify
+        run: mvn --batch-mode --no-transfer-progress -Drevision="$BUILD_VERSION" verify
+      - name: Prepare versioned artifact
+        run: cp target/curriculo-editor.jar "target/curriculo-editor-${BUILD_VERSION}.jar"
       - name: Upload application artifact
         uses: actions/upload-artifact@v4
         with:
-          name: curriculo-editor
-          path: Java/target/curriculo-editor.jar
+          name: curriculo-editor-${{ github.sha }}
+          path: Java/target/curriculo-editor-${{ env.BUILD_VERSION }}.jar
           if-no-files-found: error
           retention-days: 14

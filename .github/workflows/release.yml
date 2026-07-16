@@ -25,20 +25,27 @@ jobs:
           java-version: "21"
           cache: maven
           cache-dependency-path: Java/pom.xml
+      - name: Determine release version
+        run: |
+          if ! printf '%s' "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.]+)?$'; then
+            echo "Release tags must use vMAJOR.MINOR.PATCH, for example v1.3.0" >&2
+            exit 1
+          fi
+          echo "BUILD_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
       - name: Build release artifact
-        run: mvn --batch-mode --no-transfer-progress verify
+        run: mvn --batch-mode --no-transfer-progress -Drevision="$BUILD_VERSION" verify
       - name: Prepare release files
         run: |
-          cp target/curriculo-editor.jar "target/curriculo-editor-${GITHUB_REF_NAME}.jar"
-          sha256sum "target/curriculo-editor-${GITHUB_REF_NAME}.jar" > "target/curriculo-editor-${GITHUB_REF_NAME}.jar.sha256"
+          cp target/curriculo-editor.jar "target/curriculo-editor-${BUILD_VERSION}.jar"
+          sha256sum "target/curriculo-editor-${BUILD_VERSION}.jar" > "target/curriculo-editor-${BUILD_VERSION}.jar.sha256"
           cp ../scripts/curriculo-editor-linux target/curriculo-editor-linux
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${GITHUB_REF_NAME}" \
-            "target/curriculo-editor-${GITHUB_REF_NAME}.jar" \
-            "target/curriculo-editor-${GITHUB_REF_NAME}.jar.sha256" \
+            "target/curriculo-editor-${BUILD_VERSION}.jar" \
+            "target/curriculo-editor-${BUILD_VERSION}.jar.sha256" \
             target/curriculo-editor-linux \
             --generate-notes \
             --title "Currículo Editor ${GITHUB_REF_NAME}"
