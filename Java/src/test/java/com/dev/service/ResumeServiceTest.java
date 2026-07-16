@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ResumeServiceTest {
@@ -67,5 +68,22 @@ class ResumeServiceTest {
             assertEquals("Java, Spring, Developer, Engineer", document.getDocumentInformation().getKeywords());
             assertEquals("Builds systems", document.getDocumentInformation().getCustomMetadataValue("Description"));
         }
+    }
+
+    @Test
+    void failsExportWhenNoPdfHasBeenCompiled(@TempDir Path tempDir) {
+        ResumeService service = new ResumeService(tempDir);
+
+        assertThrows(java.nio.file.NoSuchFileException.class, () -> service.exportPDF(tempDir.resolve("output.pdf")));
+    }
+
+    @Test
+    void ignoresMissingPhotoPaths(@TempDir Path tempDir) throws Exception {
+        ResumeService service = new ResumeService(tempDir);
+
+        service.saveAll("main", "summary", "education", "experience", "skills", tempDir.resolve("missing.png").toString());
+
+        assertEquals("main", service.loadMainTex());
+        assertTrue(Files.notExists(tempDir.resolve("profile.png")));
     }
 }

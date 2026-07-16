@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Java
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: Java/pom.xml
+      - name: Build release artifact
+        run: mvn --batch-mode --no-transfer-progress verify
+      - name: Prepare release files
+        run: |
+          cp target/curriculo-editor.jar "target/curriculo-editor-${GITHUB_REF_NAME}.jar"
+          sha256sum "target/curriculo-editor-${GITHUB_REF_NAME}.jar" > "target/curriculo-editor-${GITHUB_REF_NAME}.jar.sha256"
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            "target/curriculo-editor-${GITHUB_REF_NAME}.jar" \
+            "target/curriculo-editor-${GITHUB_REF_NAME}.jar.sha256" \
+            --generate-notes \
+            --title "Currículo Editor ${GITHUB_REF_NAME}"

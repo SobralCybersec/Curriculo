@@ -1,0 +1,41 @@
+name: Performance Profile
+
+on:
+  schedule:
+    - cron: "47 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Java
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: Java/pom.xml
+      - name: Profile deterministic test workload
+        run: >-
+          mvn --batch-mode --no-transfer-progress
+          -DargLine="-XX:StartFlightRecording=filename=target/tests.jfr,dumponexit=true,settings=profile"
+          test
+      - name: Summarize Java Flight Recorder output
+        run: jfr summary target/tests.jfr > target/tests.jfr.summary.txt
+      - name: Upload performance profile
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-profile
+          path: |
+            Java/target/tests.jfr
+            Java/target/tests.jfr.summary.txt
+            Java/target/surefire-reports
+          if-no-files-found: error
+          retention-days: 30

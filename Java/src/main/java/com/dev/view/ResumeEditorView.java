@@ -105,6 +105,12 @@ public class ResumeEditorView extends JFrame {
         });
         
         pdfPreview = new PDFPreviewPanel();
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent event) {
+                pdfPreview.clear();
+            }
+        });
         
         splitPane.setLeftComponent(cardPanel);
         splitPane.setRightComponent(pdfPreview);

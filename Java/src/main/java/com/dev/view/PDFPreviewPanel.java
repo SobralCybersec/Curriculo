@@ -18,7 +18,6 @@ public class PDFPreviewPanel extends JPanel {
     private JCheckBox magnifierToggle;
     private PDDocument currentDocument;
     private PDFRenderer renderer;
-    private BufferedImage highResImage;
     private boolean updatingPageSelector;
     
     public PDFPreviewPanel() {
@@ -51,7 +50,7 @@ public class PDFPreviewPanel extends JPanel {
         topPanel.add(pageSelector);
         
         topPanel.add(Box.createHorizontalStrut(20));
-        magnifierToggle = new JCheckBox("Lupa", true);
+        magnifierToggle = new JCheckBox("Lupa", false);
         magnifierToggle.setBackground(new Color(45, 45, 48));
         magnifierToggle.setForeground(new Color(175, 177, 179));
         magnifierToggle.addActionListener(e -> {
@@ -66,6 +65,8 @@ public class PDFPreviewPanel extends JPanel {
     
     public void loadPDF(File pdfFile) {
         try {
+            imageLabel.setImages(null, null);
+            imageLabel.setText("Carregando PDF...");
             if (currentDocument != null) {
                 currentDocument.close();
             }
@@ -90,8 +91,8 @@ public class PDFPreviewPanel extends JPanel {
                 renderCurrentPage();
             }
         } catch (Exception e) {
+            clear();
             imageLabel.setText("Erro ao carregar PDF: " + e.getMessage());
-            imageLabel.setIcon(null);
         }
     }
     
@@ -101,11 +102,11 @@ public class PDFPreviewPanel extends JPanel {
         try {
             int pageIndex = (Integer) pageSelector.getSelectedItem() - 1;
             BufferedImage displayImage = renderer.renderImageWithDPI(pageIndex, 72);
-            highResImage = magnifierToggle.isSelected() ? renderer.renderImageWithDPI(pageIndex, 200) : null;
+            BufferedImage highResImage = magnifierToggle.isSelected() ? renderer.renderImageWithDPI(pageIndex, 200) : null;
             imageLabel.setImages(displayImage, highResImage);
         } catch (Exception e) {
             imageLabel.setText("Erro ao renderizar página: " + e.getMessage());
-            imageLabel.setIcon(null);
+            imageLabel.setImages(null, null);
         }
     }
     
@@ -123,7 +124,6 @@ public class PDFPreviewPanel extends JPanel {
         imageLabel.setText("Nenhum PDF carregado");
         imageLabel.setIcon(null);
         imageLabel.setImages(null, null);
-        highResImage = null;
     }
     
     private static class PDFImageLabel extends JLabel {
@@ -162,6 +162,8 @@ public class PDFPreviewPanel extends JPanel {
         }
         
         public void setImages(BufferedImage display, BufferedImage highRes) {
+            flushIfReplaced(displayImage, display, highRes);
+            flushIfReplaced(highResImage, display, highRes);
             this.displayImage = display;
             this.highResImage = highRes;
             if (display != null) {
@@ -172,6 +174,12 @@ public class PDFPreviewPanel extends JPanel {
             }
             mousePos = null;
             repaint();
+        }
+
+        private void flushIfReplaced(BufferedImage current, BufferedImage display, BufferedImage highRes) {
+            if (current != null && current != display && current != highRes) {
+                current.flush();
+            }
         }
         
         public void setMagnifierEnabled(boolean enabled) {

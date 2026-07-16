@@ -82,4 +82,26 @@ class LatexParserTest {
 
         assertEquals(0, model.getRowCount());
     }
+
+    @Test
+    void removesTemplateSeparatorsFromSummary() {
+        DefaultTableModel model = new DefaultTableModel(new String[]{"Summary"}, 0);
+
+        LatexParser.parseSummary("\\begin{cvparagraph}\n%----------------\nSummary text\n\\end{cvparagraph}", model);
+
+        assertEquals("Summary text", model.getValueAt(0, 0));
+    }
+
+    @Test
+    void expandsEducationModelToRequiredColumns() {
+        DefaultTableModel source = new DefaultTableModel(
+            new Object[][]{{"Degree", "School", "City", "2024", "Description"}},
+            new String[]{"Degree", "School", "Location", "Dates", "Description"});
+        DefaultTableModel target = new DefaultTableModel(new String[]{"Degree", "School"}, 0);
+
+        LatexParser.parseEducation(LatexGenerator.generateEducation(new JTable(source)), target);
+
+        assertEquals(5, target.getColumnCount());
+        assertEquals("Description", target.getValueAt(0, 4));
+    }
 }

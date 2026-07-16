@@ -17,8 +17,8 @@ public class LatexGenerator {
         sb.append("\\begin{cvparagraph}\n\n");
         sb.append("%---------------------------------------------------------\n");
         
-        if (model.getRowCount() > 0 && model.getValueAt(0, 0) != null) {
-            sb.append(model.getValueAt(0, 0).toString());
+        if (model.getRowCount() > 0) {
+            sb.append(cellText(model, 0, 0));
         }
         
         sb.append("\n\\end{cvparagraph}\n");
@@ -67,8 +67,8 @@ public class LatexGenerator {
         for (int i = 0; i < model.getRowCount(); i++) {
             sb.append("%---------------------------------------------------------\n");
             sb.append("  \\cvskill\n");
-            sb.append("    {").append(model.getValueAt(i, 0)).append("}\n");
-            sb.append("    {").append(model.getValueAt(i, 1)).append("}\n\n");
+            sb.append("    {").append(cellText(model, i, 0)).append("}\n");
+            sb.append("    {").append(cellText(model, i, 1)).append("}\n\n");
         }
         
         sb.append("%---------------------------------------------------------\n");
@@ -91,16 +91,16 @@ public class LatexGenerator {
         for (int i = 0; i < model.getRowCount(); i++) {
             sb.append("%---------------------------------------------------------\n");
             sb.append("  \\cventry\n");
-            sb.append("    {").append(model.getValueAt(i, 0)).append("} % ").append(label1).append("\n");
-            sb.append("    {").append(model.getValueAt(i, 1)).append("} % ").append(label2).append("\n");
-            sb.append("    {").append(model.getValueAt(i, 2)).append("} % Location\n");
-            sb.append("    {").append(model.getValueAt(i, 3)).append("} % Date(s)\n");
+            sb.append("    {").append(cellText(model, i, 0)).append("} % ").append(label1).append("\n");
+            sb.append("    {").append(cellText(model, i, 1)).append("} % ").append(label2).append("\n");
+            sb.append("    {").append(cellText(model, i, 2)).append("} % Location\n");
+            sb.append("    {").append(cellText(model, i, 3)).append("} % Date(s)\n");
             sb.append("    {\n");
             sb.append("      \\begin{cvitems} % Description(s) bullet points\n");
             
             if (model.getColumnCount() > 4) {
-                String desc = String.valueOf(model.getValueAt(i, 4));
-                if (desc != null && !desc.equals("null")) {
+                String desc = cellText(model, i, 4);
+                if (!desc.isEmpty()) {
                     for (String bullet : desc.split("\n")) {
                         bullet = bullet.trim();
                         if (!bullet.isEmpty()) {
@@ -117,5 +117,10 @@ public class LatexGenerator {
         sb.append("%---------------------------------------------------------\n");
         sb.append("\\end{cventries}\n");
         return sb.toString();
+    }
+
+    private static String cellText(DefaultTableModel model, int row, int column) {
+        Object value = model.getValueAt(row, column);
+        return value == null ? "" : value.toString();
     }
 }

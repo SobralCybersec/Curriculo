@@ -62,6 +62,21 @@ class OptionsPanelTest {
         assertEquals(Map.of("gitlab", "ana-dev"), onEdt(panel::getEnabledSocials));
     }
 
+    @Test
+    void ignoresInvalidThemeColorsAndUnknownSocials() throws Exception {
+        OptionsPanel panel = onEdt(OptionsPanel::new);
+        String initialColor = onEdt(panel::getThemeColor);
+
+        onEdt(() -> {
+            panel.setThemeColor("not-a-color");
+            panel.setSocial("unknown", "value");
+            return null;
+        });
+
+        assertEquals(initialColor, onEdt(panel::getThemeColor));
+        assertEquals(Map.of(), onEdt(panel::getEnabledSocials));
+    }
+
     private static <T> T onEdt(Callable<T> action) throws Exception {
         if (SwingUtilities.isEventDispatchThread()) return action.call();
         FutureTask<T> task = new FutureTask<>(action);
