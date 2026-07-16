@@ -25,7 +25,7 @@ jobs:
       - name: Profile deterministic test workload
         run: >-
           mvn --batch-mode --no-transfer-progress
-          -DargLine="-XX:StartFlightRecording=filename=target/tests.jfr,dumponexit=true,settings=profile"
+          -DargLine="-XX:StartFlightRecording=filename=target/tests.jfr,dumponexit=true,settings=profile,maxsize=16m"
           test
       - name: Summarize Java Flight Recorder output
         run: jfr summary target/tests.jfr > target/tests.jfr.summary.txt

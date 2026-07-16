@@ -16,8 +16,9 @@ public class PDFPreviewPanel extends JPanel {
     private JScrollPane scrollPane;
     private JComboBox<Integer> pageSelector;
     private JCheckBox magnifierToggle;
-    private PDDocument currentDocument;
-    private PDFRenderer renderer;
+    private File currentPdfFile;
+    private long renderRequest;
+    private SwingWorker<RenderedPage, Void> renderWorker;
     private boolean updatingPageSelector;
     
     public PDFPreviewPanel() {
@@ -55,7 +56,11 @@ public class PDFPreviewPanel extends JPanel {
         magnifierToggle.setForeground(new Color(175, 177, 179));
         magnifierToggle.addActionListener(e -> {
             imageLabel.setMagnifierEnabled(magnifierToggle.isSelected());
-            renderCurrentPage();
+            if (magnifierToggle.isSelected()) {
+                renderCurrentPage();
+            } else {
+                imageLabel.clearHighResolutionImage();
+            }
         });
         topPanel.add(magnifierToggle);
         
@@ -64,73 +69,97 @@ public class PDFPreviewPanel extends JPanel {
     }
     
     public void loadPDF(File pdfFile) {
+        currentPdfFile = pdfFile;
+        updatingPageSelector = true;
         try {
-            imageLabel.setImages(null, null);
-            imageLabel.setText("Carregando PDF...");
-            if (currentDocument != null) {
-                currentDocument.close();
-            }
-            
-            currentDocument = PDDocument.load(pdfFile);
-            renderer = new PDFRenderer(currentDocument);
-            
-            updatingPageSelector = true;
-            try {
-                pageSelector.removeAllItems();
-                for (int i = 1; i <= currentDocument.getNumberOfPages(); i++) {
-                    pageSelector.addItem(i);
-                }
-                if (currentDocument.getNumberOfPages() > 0) {
-                    pageSelector.setSelectedIndex(0);
-                }
-            } finally {
-                updatingPageSelector = false;
-            }
-
-            if (currentDocument.getNumberOfPages() > 0) {
-                renderCurrentPage();
-            }
-        } catch (Exception e) {
-            clear();
-            imageLabel.setText("Erro ao carregar PDF: " + e.getMessage());
+            pageSelector.removeAllItems();
+        } finally {
+            updatingPageSelector = false;
         }
+        imageLabel.setImages(null, null);
+        imageLabel.setText("Carregando PDF...");
+        renderPage(0, true);
     }
     
     private void renderCurrentPage() {
-        if (renderer == null || pageSelector.getSelectedItem() == null) return;
-        
+        if (currentPdfFile == null || pageSelector.getSelectedItem() == null) return;
+        renderPage((Integer) pageSelector.getSelectedItem() - 1, false);
+    }
+
+    private void renderPage(int pageIndex, boolean populatePageSelector) {
+        File pdfFile = currentPdfFile;
+        if (pdfFile == null) return;
+        long request = ++renderRequest;
+        if (renderWorker != null) renderWorker.cancel(true);
+        boolean renderMagnifier = magnifierToggle.isSelected();
+        renderWorker = new SwingWorker<>() {
+            @Override
+            protected RenderedPage doInBackground() throws Exception {
+                try (PDDocument document = PDDocument.load(pdfFile)) {
+                    if (pageIndex < 0 || pageIndex >= document.getNumberOfPages()) {
+                        throw new IllegalArgumentException("Página inválida");
+                    }
+                    PDFRenderer pdfRenderer = new PDFRenderer(document);
+                    BufferedImage displayImage = pdfRenderer.renderImageWithDPI(pageIndex, 72);
+                    BufferedImage highResImage = renderMagnifier ? pdfRenderer.renderImageWithDPI(pageIndex, 200) : null;
+                    return new RenderedPage(document.getNumberOfPages(), displayImage, highResImage);
+                }
+            }
+
+            @Override
+            protected void done() {
+                if (request != renderRequest || !pdfFile.equals(currentPdfFile) || isCancelled()) return;
+                try {
+                    RenderedPage page = get();
+                    if (populatePageSelector) populatePageSelector(page.pageCount(), pageIndex);
+                    imageLabel.setImages(page.displayImage(), page.highResImage());
+                } catch (Exception e) {
+                    imageLabel.setImages(null, null);
+                    imageLabel.setText("Erro ao carregar PDF: " + e.getMessage());
+                }
+            }
+        };
+        renderWorker.execute();
+    }
+
+    private void populatePageSelector(int pageCount, int pageIndex) {
+        updatingPageSelector = true;
         try {
-            int pageIndex = (Integer) pageSelector.getSelectedItem() - 1;
-            BufferedImage displayImage = renderer.renderImageWithDPI(pageIndex, 72);
-            BufferedImage highResImage = magnifierToggle.isSelected() ? renderer.renderImageWithDPI(pageIndex, 200) : null;
-            imageLabel.setImages(displayImage, highResImage);
-        } catch (Exception e) {
-            imageLabel.setText("Erro ao renderizar página: " + e.getMessage());
-            imageLabel.setImages(null, null);
+            pageSelector.removeAllItems();
+            for (int page = 1; page <= pageCount; page++) {
+                pageSelector.addItem(page);
+            }
+            pageSelector.setSelectedIndex(pageIndex);
+        } finally {
+            updatingPageSelector = false;
         }
     }
     
     public void clear() {
-        try {
-            if (currentDocument != null) {
-                currentDocument.close();
-                currentDocument = null;
-            }
-        } catch (Exception e) {
-            // Ignore
-        }
-        renderer = null;
+        currentPdfFile = null;
+        renderRequest++;
+        if (renderWorker != null) renderWorker.cancel(true);
+        renderWorker = null;
         pageSelector.removeAllItems();
         imageLabel.setText("Nenhum PDF carregado");
         imageLabel.setIcon(null);
         imageLabel.setImages(null, null);
+    }
+
+    int getLoadedPageCount() {
+        return pageSelector.getItemCount();
+    }
+
+    private record RenderedPage(int pageCount, BufferedImage displayImage, BufferedImage highResImage) {
     }
     
     private static class PDFImageLabel extends JLabel {
         private BufferedImage displayImage;
         private BufferedImage highResImage;
         private Point mousePos;
-        private boolean magnifierEnabled = true;
+        private boolean magnifierEnabled;
+        private final Timer repaintTimer;
+        private boolean repaintPending;
         private static final int MAGNIFIER_SIZE = 100;
         private static final float MAGNIFIER_ZOOM = 3.0f;
         
@@ -141,13 +170,18 @@ public class PDFPreviewPanel extends JPanel {
             setForeground(new Color(175, 177, 179));
             setBackground(new Color(42, 42, 44));
             setOpaque(true);
+            repaintTimer = new Timer(16, e -> {
+                repaintPending = false;
+                repaint();
+            });
+            repaintTimer.setRepeats(false);
             
             addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent e) {
                     if (magnifierEnabled && displayImage != null) {
                         mousePos = e.getPoint();
-                        repaint();
+                        scheduleRepaint();
                     }
                 }
             });
@@ -156,6 +190,8 @@ public class PDFPreviewPanel extends JPanel {
                 @Override
                 public void mouseExited(MouseEvent e) {
                     mousePos = null;
+                    repaintTimer.stop();
+                    repaintPending = false;
                     repaint();
                 }
             });
@@ -185,7 +221,24 @@ public class PDFPreviewPanel extends JPanel {
         public void setMagnifierEnabled(boolean enabled) {
             this.magnifierEnabled = enabled;
             mousePos = null;
+            if (!enabled) {
+                repaintTimer.stop();
+                repaintPending = false;
+            }
             repaint();
+        }
+
+        public void clearHighResolutionImage() {
+            flushIfReplaced(highResImage, displayImage, null);
+            highResImage = null;
+            mousePos = null;
+            repaint();
+        }
+
+        private void scheduleRepaint() {
+            if (repaintPending) return;
+            repaintPending = true;
+            repaintTimer.restart();
         }
         
         @Override

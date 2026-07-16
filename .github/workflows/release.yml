@@ -31,6 +31,7 @@ jobs:
         run: |
           cp target/curriculo-editor.jar "target/curriculo-editor-${GITHUB_REF_NAME}.jar"
           sha256sum "target/curriculo-editor-${GITHUB_REF_NAME}.jar" > "target/curriculo-editor-${GITHUB_REF_NAME}.jar.sha256"
+          cp ../scripts/curriculo-editor-linux target/curriculo-editor-linux
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -38,5 +39,6 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             "target/curriculo-editor-${GITHUB_REF_NAME}.jar" \
             "target/curriculo-editor-${GITHUB_REF_NAME}.jar.sha256" \
+            target/curriculo-editor-linux \
             --generate-notes \
             --title "Currículo Editor ${GITHUB_REF_NAME}"

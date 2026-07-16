@@ -2,12 +2,13 @@
 
 ## Current goal
 
-- Add deterministic code-quality and performance-profile CI gates.
+- Improve Swing responsiveness on Linux/Wayland while keeping the existing Java 21 desktop distribution model.
 
 ## Files touched
 
 - `PROGRESS.md`
 - `Java/pom.xml`
+- `Java/src/main/java/com/dev/Main.java`
 - `Java/src/main/java/com/dev/model/ResumeData.java` (deleted)
 - `Java/src/main/java/com/dev/service/ResumeService.java`
 - `Java/src/main/java/com/dev/util/LatexParser.java`
@@ -17,6 +18,7 @@
 - `Java/src/test/java/com/dev/service/ResumeServiceTest.java`
 - `Java/src/test/java/com/dev/util/LatexParserTest.java`
 - `Java/src/test/java/com/dev/util/LatexGeneratorTest.java`
+- `Java/src/test/java/com/dev/util/LatexPropertyTest.java`
 - `Java/src/test/java/com/dev/util/UIThemeTest.java`
 - `Java/src/test/java/com/dev/view/OptionsPanelTest.java`
 - `Java/src/test/java/com/dev/view/PDFPreviewPanelTest.java`
@@ -24,44 +26,32 @@
 - `.github/workflows/release.yml`
 - `.github/workflows/code-quality.yml`
 - `.github/workflows/performance.yml`
-- `Java/src/test/java/com/dev/util/LatexPropertyTest.java`
+- `README.md`
+- `scripts/curriculo-editor-linux`
 
 ## Decisions made
 
-- Keep Java/Swing and the existing LaTeX-on-disk contract.
-- Do not alter existing uncommitted UI, dependency, documentation, or root `src/` work.
-- Remove unused `ResumeData` and Gson instead of introducing an unused model layer.
-- Snapshot Swing state on EDT; run file writes, XeLaTeX, and PDF metadata work in a `SwingWorker`.
-- Avoid repeated first-page renders and skip 200 DPI preview rendering when magnifier is disabled.
-- Default the magnifier off: JFR measured A4 200 DPI raster allocation at 14.7 MB in addition to 1.9 MB at 72 DPI.
-- Flush replaced preview images and clear document/images on load/render errors and window close.
-- CI uses Java 21, Maven dependency caching, `verify`, and a downloadable shaded JAR artifact.
-- Release runs only on `v*` tags, attaches versioned JAR plus SHA-256, and has only `contents: write` permission.
-- Maven Enforcer now requires Maven 3.9+, JDK 21, and converged dependencies.
-- Code quality CI runs strict compile-scope dependency analysis; weekly/manual performance CI archives JFR instead of using flaky runner-time thresholds.
+- Keep Java/Swing and the current LaTeX-on-disk contract; do not rewrite the app.
+- Keep all Swing startup and component creation on the EDT.
+- Use platform-selected placement instead of repeatedly recentering/resizing the split pane.
+- Render each PDF page in a cancellable worker with an isolated PDFBox document; stale requests cannot replace the current preview.
+- Render the 200 DPI magnifier image only when requested, flush discarded images, and coalesce hover repaints to one per 16 ms.
+- The Linux launcher only adds Wayland compositor compatibility when the session is Wayland; it preserves a caller-supplied override and requests GTK3.
+- CI remains Java 21/Maven based; release now ships the Linux launcher with the JAR and SHA-256 file.
 
 ## Verified checks
 
-- [x] JFR baseline `/tmp/cv-preview-before.jfr`: A4 preview allocated 1.9 MB (72 DPI) + 14.7 MB (200 DPI).
-- [x] JFR after `/tmp/cv-preview-after.jfr`: magnifier-off A4 preview allocated 1.9 MB only.
-- [x] `rtk mvn test` from `Java/`: 21 tests pass.
-- [x] `rtk mvn package` from `Java/`: package succeeds.
-- [x] `rtk mvn --batch-mode --no-transfer-progress verify` from `Java/`: 30 tests pass.
-- [x] Strict dependency analysis: no dependency problems.
-- [x] Performance workflow command produced `Java/target/tests.jfr` and a valid JFR summary.
-- [x] Ruby parsed both GitHub workflow YAML files.
+- [x] `rtk mvn --batch-mode --no-transfer-progress verify` from `Java/`: 30 tests passed after worker rendering.
+- [x] JFR test profile command completed and `target/tests.jfr` has a valid summary.
+- [x] Wayland-session smoke: timed six-second JAR run stayed alive until the expected timeout and wrote a valid JFR; no application error was emitted.
+- [x] `rtk sh -n scripts/curriculo-editor-linux`: launcher syntax valid.
+- [x] Ruby parsed all GitHub workflow YAML files.
 - [x] `rtk git diff --check`: no whitespace errors.
+- [x] Earlier performance baseline: 72 DPI A4 preview allocated 1.9 MB; the optional 200 DPI preview added 14.7 MB. Magnifier-off avoids that extra allocation.
 
 ## Remaining work
 
-- [x] Fix dynamic saved-file loading and add regression test.
-- [x] Fix nested-brace and summary parsing; add round-trip tests.
-- [x] Stop compile/export path after save failure; quote regex replacements.
-- [x] Run test/package, inspect diff, update this file.
-- [x] Move save/compile/metadata work off EDT; prevent concurrent compile actions.
-- [x] Remove duplicate initial preview rendering; make 200 DPI rendering magnifier-dependent.
-- [x] Profile and reduce A4 preview allocation; cover clear and invalid-PDF recovery.
-- [x] Add CI and tag-based release workflows; expand regression suite to 28 tests.
-- [x] Add Enforcer, dependency-quality CI, jqwik property coverage, and scheduled/manual JFR profiling.
-- [ ] Future: move PDF page rendering off EDT; make multi-file writes atomic; preserve compiler diagnostics and add a compiler timeout.
+- [x] Move PDF rendering off the EDT and add asynchronous preview regression coverage.
+- [x] Provide a Linux/Wayland launcher and attach it to releases.
+- [ ] Future: make multi-file writes atomic; preserve compiler diagnostics and add a compiler timeout.
 - [ ] Environment: repair XeLaTeX format (`xelatex.fmt`) before end-to-end compile profiling.

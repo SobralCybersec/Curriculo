@@ -155,6 +155,9 @@ mvn clean package
 
 # Executar o editor
 java -jar target/curriculo-editor.jar
+
+# Linux/Wayland: o launcher configura GTK3 e a compatibilidade com compositores não-reparenting
+../scripts/curriculo-editor-linux target/curriculo-editor.jar
 ```
 </div>
 

@@ -45,7 +45,7 @@ public class ResumeEditorView extends JFrame {
         setTitle("Currículo Maker - Editor Profissional");
         setSize(UITheme.WINDOW_WIDTH, UITheme.WINDOW_HEIGHT);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLocationByPlatform(true);
         setUndecorated(false);
         getContentPane().setBackground(UITheme.BACKGROUND);
         
@@ -96,13 +96,6 @@ public class ResumeEditorView extends JFrame {
         splitPane.setBorder(null);
         splitPane.setDividerSize(8);
         splitPane.setBackground(UITheme.BACKGROUND);
-        
-        addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                int width = getWidth();
-                splitPane.setDividerLocation((int)(width * 0.6));
-            }
-        });
         
         pdfPreview = new PDFPreviewPanel();
         addWindowListener(new java.awt.event.WindowAdapter() {

@@ -18,6 +18,7 @@ import java.util.concurrent.FutureTask;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PDFPreviewPanelTest {
 
@@ -42,9 +43,13 @@ class PDFPreviewPanelTest {
 
         assertDoesNotThrow(() -> onEdt(() -> {
             panel.loadPDF(pdf.toFile());
-            panel.clear();
             return null;
         }));
+        assertTrue(awaitCondition(() -> onEdt(() -> panel.getLoadedPageCount() == 1)));
+        onEdt(() -> {
+            panel.clear();
+            return null;
+        });
     }
 
     @Test
@@ -85,5 +90,14 @@ class PDFPreviewPanelTest {
             }
         }
         return null;
+    }
+
+    private static boolean awaitCondition(Callable<Boolean> condition) throws Exception {
+        long deadline = System.nanoTime() + 5_000_000_000L;
+        while (System.nanoTime() < deadline) {
+            if (condition.call()) return true;
+            Thread.sleep(10);
+        }
+        return false;
     }
 }

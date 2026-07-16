@@ -8,12 +8,14 @@ import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        try {
-            FlatDarkLaf.setup();
-            UITheme.applyFlatLaf();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        SwingUtilities.invokeLater(() -> new ResumeEditorView().setVisible(true));
+        SwingUtilities.invokeLater(() -> {
+            try {
+                FlatDarkLaf.setup();
+                UITheme.applyFlatLaf();
+                new ResumeEditorView().setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

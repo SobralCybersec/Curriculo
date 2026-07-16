@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ "$#" -gt 0 ]; then
+  jar_path=$1
+else
+  set -- "$script_dir"/curriculo-editor*.jar
+  jar_path=$1
+fi
+
+if [ ! -f "$jar_path" ]; then
+  echo "JAR not found: $jar_path" >&2
+  exit 1
+fi
+
+if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && [ -z "${_JAVA_AWT_WM_NONREPARENTING+x}" ]; then
+  export _JAVA_AWT_WM_NONREPARENTING=1
+fi
+
+exec java -Djdk.gtk.version=3 -jar "$jar_path"
