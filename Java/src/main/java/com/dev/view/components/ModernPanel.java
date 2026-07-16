@@ -39,12 +39,4 @@ public class ModernPanel extends JPanel {
         setCornerRadius(arc);
     }
     
-    public void setWithShadow(boolean withShadow) {
-        // Mantido para compatibilidade
-    }
-    
-    public void setGradient(Color start, Color end) {
-        // Mantido para compatibilidade
-    }
-
 }

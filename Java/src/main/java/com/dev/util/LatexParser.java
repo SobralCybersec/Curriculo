@@ -28,10 +28,11 @@ public class LatexParser {
     
     public static void parseSummary(String tex, DefaultTableModel model) {
         model.setRowCount(0);
-        int start = tex.indexOf("\\begin{cvparagraph}");
+        String marker = "\\begin{cvparagraph}";
+        int start = tex.indexOf(marker);
         int end = tex.indexOf("\\end{cvparagraph}");
         if (start >= 0 && end > start) {
-            String content = tex.substring(start + 20, end).replaceAll("%-+", "").trim();
+            String content = tex.substring(start + marker.length(), end).replaceAll("%-+", "").trim();
             model.addRow(new Object[]{content});
         }
     }
@@ -64,13 +65,21 @@ public class LatexParser {
     }
     
     private static String extractBraces(String text, int index) {
-        int count = 0, start = -1;
+        int count = 0;
+        int start = -1;
+        int depth = 0;
         for (int i = 0; i < text.length(); i++) {
             if (text.charAt(i) == '{') {
-                if (count == index) start = i + 1;
-                count++;
-            } else if (text.charAt(i) == '}' && start > 0) {
-                return text.substring(start, i).trim();
+                if (depth == 0) {
+                    if (count == index) start = i + 1;
+                    count++;
+                }
+                depth++;
+            } else if (text.charAt(i) == '}' && depth > 0) {
+                depth--;
+                if (depth == 0 && start >= 0) {
+                    return text.substring(start, i).trim();
+                }
             }
         }
         return "";

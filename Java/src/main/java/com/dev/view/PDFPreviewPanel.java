@@ -19,6 +19,7 @@ public class PDFPreviewPanel extends JPanel {
     private PDDocument currentDocument;
     private PDFRenderer renderer;
     private BufferedImage highResImage;
+    private boolean updatingPageSelector;
     
     public PDFPreviewPanel() {
         setLayout(new BorderLayout());
@@ -44,14 +45,19 @@ public class PDFPreviewPanel extends JPanel {
         pageSelector = new JComboBox<>();
         pageSelector.setBackground(new Color(26, 26, 26));
         pageSelector.setForeground(new Color(175, 177, 179));
-        pageSelector.addActionListener(e -> renderCurrentPage());
+        pageSelector.addActionListener(e -> {
+            if (!updatingPageSelector) renderCurrentPage();
+        });
         topPanel.add(pageSelector);
         
         topPanel.add(Box.createHorizontalStrut(20));
         magnifierToggle = new JCheckBox("Lupa", true);
         magnifierToggle.setBackground(new Color(45, 45, 48));
         magnifierToggle.setForeground(new Color(175, 177, 179));
-        magnifierToggle.addActionListener(e -> imageLabel.setMagnifierEnabled(magnifierToggle.isSelected()));
+        magnifierToggle.addActionListener(e -> {
+            imageLabel.setMagnifierEnabled(magnifierToggle.isSelected());
+            renderCurrentPage();
+        });
         topPanel.add(magnifierToggle);
         
         add(topPanel, BorderLayout.NORTH);
@@ -67,13 +73,20 @@ public class PDFPreviewPanel extends JPanel {
             currentDocument = PDDocument.load(pdfFile);
             renderer = new PDFRenderer(currentDocument);
             
-            pageSelector.removeAllItems();
-            for (int i = 1; i <= currentDocument.getNumberOfPages(); i++) {
-                pageSelector.addItem(i);
+            updatingPageSelector = true;
+            try {
+                pageSelector.removeAllItems();
+                for (int i = 1; i <= currentDocument.getNumberOfPages(); i++) {
+                    pageSelector.addItem(i);
+                }
+                if (currentDocument.getNumberOfPages() > 0) {
+                    pageSelector.setSelectedIndex(0);
+                }
+            } finally {
+                updatingPageSelector = false;
             }
-            
+
             if (currentDocument.getNumberOfPages() > 0) {
-                pageSelector.setSelectedIndex(0);
                 renderCurrentPage();
             }
         } catch (Exception e) {
@@ -88,7 +101,7 @@ public class PDFPreviewPanel extends JPanel {
         try {
             int pageIndex = (Integer) pageSelector.getSelectedItem() - 1;
             BufferedImage displayImage = renderer.renderImageWithDPI(pageIndex, 72);
-            highResImage = renderer.renderImageWithDPI(pageIndex, 200);
+            highResImage = magnifierToggle.isSelected() ? renderer.renderImageWithDPI(pageIndex, 200) : null;
             imageLabel.setImages(displayImage, highResImage);
         } catch (Exception e) {
             imageLabel.setText("Erro ao renderizar página: " + e.getMessage());

@@ -5,6 +5,7 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 
 import javax.swing.table.DefaultTableModel;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,11 +16,13 @@ import java.util.Set;
 
 public class ResumeService {
     private Path basePath;
-    private boolean useExternalFiles;
     
     public ResumeService() {
         this.basePath = findBasePath();
-        this.useExternalFiles = Files.exists(basePath);
+    }
+
+    ResumeService(Path basePath) {
+        this.basePath = basePath;
     }
     
     private Path findBasePath() {
@@ -31,13 +34,13 @@ public class ResumeService {
     }
     
     private String loadResource(String path) throws IOException {
-        if (useExternalFiles && Files.exists(basePath.resolve(path))) {
+        if (Files.exists(basePath.resolve(path))) {
             return Files.readString(basePath.resolve(path));
         }
         
         try (InputStream is = getClass().getResourceAsStream("/exemplos/" + path)) {
             if (is == null) throw new FileNotFoundException("Resource not found: " + path);
-            return new String(is.readAllBytes());
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         }
     }
     
@@ -75,7 +78,9 @@ public class ResumeService {
         if (photoPath != null && !photoPath.isEmpty()) {
             Path source = Paths.get(photoPath);
             if (Files.exists(source)) {
-                String extension = photoPath.substring(photoPath.lastIndexOf('.'));
+                String fileName = source.getFileName().toString();
+                int extensionStart = fileName.lastIndexOf('.');
+                String extension = extensionStart > 0 ? fileName.substring(extensionStart) : "";
                 Files.copy(source, basePath.resolve("profile" + extension), StandardCopyOption.REPLACE_EXISTING);
             }
         }

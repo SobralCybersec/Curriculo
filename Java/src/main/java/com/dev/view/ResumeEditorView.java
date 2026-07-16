@@ -13,8 +13,12 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
 
 public class ResumeEditorView extends JFrame {
     private final ResumeService service;
@@ -28,6 +32,7 @@ public class ResumeEditorView extends JFrame {
     private JTextArea eduDescArea, expDescArea;
     private PDFPreviewPanel pdfPreview;
     private OptionsPanel optionsPanel;
+    private ModernButton loadButton, saveButton, compileButton;
     private java.util.List<String> positions = new ArrayList<>();
     
     public ResumeEditorView() {
@@ -108,27 +113,27 @@ public class ResumeEditorView extends JFrame {
         
         ModernPanel bottomPanel = new ModernPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         
-        ModernButton loadBtn = new ModernButton("  Carregar", IconFactory.createLoadIcon(16, UITheme.FOREGROUND));
-        ModernButton saveBtn = new ModernButton("  Salvar", IconFactory.createSaveIcon(16, UITheme.FOREGROUND));
-        ModernButton compileBtn = new ModernButton("  Compilar PDF", IconFactory.createCompileIcon(16, UITheme.FOREGROUND));
+        loadButton = new ModernButton("  Carregar", IconFactory.createLoadIcon(16, UITheme.FOREGROUND));
+        saveButton = new ModernButton("  Salvar", IconFactory.createSaveIcon(16, UITheme.FOREGROUND));
+        compileButton = new ModernButton("  Compilar PDF", IconFactory.createCompileIcon(16, UITheme.FOREGROUND));
         
-        loadBtn.setPreferredSize(new Dimension(140, UITheme.BUTTON_HEIGHT));
-        saveBtn.setPreferredSize(new Dimension(140, UITheme.BUTTON_HEIGHT));
-        compileBtn.setPreferredSize(new Dimension(160, UITheme.BUTTON_HEIGHT));
+        loadButton.setPreferredSize(new Dimension(140, UITheme.BUTTON_HEIGHT));
+        saveButton.setPreferredSize(new Dimension(140, UITheme.BUTTON_HEIGHT));
+        compileButton.setPreferredSize(new Dimension(160, UITheme.BUTTON_HEIGHT));
         
-        loadBtn.addActionListener(e -> {
+        loadButton.addActionListener(e -> {
             loadFiles();
         });
-        saveBtn.addActionListener(e -> {
+        saveButton.addActionListener(e -> {
             saveAndPreview();
         });
-        compileBtn.addActionListener(e -> {
+        compileButton.addActionListener(e -> {
             compilePDF();
         });
         
-        bottomPanel.add(loadBtn);
-        bottomPanel.add(saveBtn);
-        bottomPanel.add(compileBtn);
+        bottomPanel.add(loadButton);
+        bottomPanel.add(saveButton);
+        bottomPanel.add(compileButton);
         
         mainContainer.add(contentPanel, BorderLayout.CENTER);
         mainContainer.add(bottomPanel, BorderLayout.SOUTH);
@@ -635,44 +640,88 @@ public class ResumeEditorView extends JFrame {
     }
     
     private void saveAndPreview() {
-        try {
-            saveFiles();
-            
-            int exitCode = service.compilePDF();
-            if (exitCode == 0) {
-                DefaultTableModel summaryModel = (DefaultTableModel) summaryTable.getModel();
-                String summary = summaryModel.getRowCount() > 0 && summaryModel.getValueAt(0, 0) != null 
-                               ? summaryModel.getValueAt(0, 0).toString() : "";
-                
-                service.addPDFMetadata(nameField.getText(), positions, summary, 
-                                      (DefaultTableModel) skillsTable.getModel());
-                
-                File pdfFile = service.getPDFFile();
-                if (pdfFile.exists()) {
-                    pdfPreview.loadPDF(pdfFile);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Erro na compilação", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erro: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        }
+        compileInBackground(true);
     }
     
-    private void saveFiles() {
-        try {
-            String mainTex = updatePersonalInfo(mainTexArea.getText());
-            service.saveAll(mainTex,
-                LatexGenerator.generateSummary((DefaultTableModel) summaryTable.getModel()),
-                LatexGenerator.generateEducation(educationTable),
-                LatexGenerator.generateExperience(experienceTable),
-                LatexGenerator.generateSkills((DefaultTableModel) skillsTable.getModel()),
-                optionsPanel.getPhotoPath());
-            
-            JOptionPane.showMessageDialog(this, "Arquivos salvos com sucesso!");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erro ao salvar: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+    private CompilationRequest createCompilationRequest() {
+        String mainTex = updatePersonalInfo(mainTexArea.getText());
+        DefaultTableModel summaryModel = (DefaultTableModel) summaryTable.getModel();
+        String summary = summaryModel.getRowCount() > 0 && summaryModel.getValueAt(0, 0) != null
+            ? summaryModel.getValueAt(0, 0).toString() : "";
+        return new CompilationRequest(mainTex,
+            LatexGenerator.generateSummary((DefaultTableModel) summaryTable.getModel()),
+            LatexGenerator.generateEducation(educationTable),
+            LatexGenerator.generateExperience(experienceTable),
+            LatexGenerator.generateSkills((DefaultTableModel) skillsTable.getModel()),
+            optionsPanel.getPhotoPath(),
+            nameField.getText(),
+            List.copyOf(positions),
+            summary,
+            copyTableModel((DefaultTableModel) skillsTable.getModel()));
+    }
+
+    private DefaultTableModel copyTableModel(DefaultTableModel source) {
+        String[] columns = new String[source.getColumnCount()];
+        for (int column = 0; column < source.getColumnCount(); column++) {
+            columns[column] = source.getColumnName(column);
         }
+        DefaultTableModel copy = new DefaultTableModel(columns, 0);
+        for (int row = 0; row < source.getRowCount(); row++) {
+            Object[] values = new Object[source.getColumnCount()];
+            for (int column = 0; column < source.getColumnCount(); column++) {
+                values[column] = source.getValueAt(row, column);
+            }
+            copy.addRow(values);
+        }
+        return copy;
+    }
+
+    private void compileInBackground(boolean previewAfterCompile) {
+        CompilationRequest request = createCompilationRequest();
+        setActionsEnabled(false);
+        new SwingWorker<File, Void>() {
+            @Override
+            protected File doInBackground() throws Exception {
+                service.saveAll(request.mainTex(), request.summaryTex(), request.educationTex(),
+                    request.experienceTex(), request.skillsTex(), request.photoPath());
+                if (service.compilePDF() != 0) {
+                    throw new IOException("Erro na compilação");
+                }
+                service.addPDFMetadata(request.name(), request.positions(), request.summary(), request.skillsModel());
+                return service.getPDFFile();
+            }
+
+            @Override
+            protected void done() {
+                setActionsEnabled(true);
+                try {
+                    File pdfFile = get();
+                    JOptionPane.showMessageDialog(ResumeEditorView.this, "Arquivos salvos com sucesso!");
+                    if (previewAfterCompile && pdfFile.exists()) {
+                        pdfPreview.loadPDF(pdfFile);
+                    } else if (!previewAfterCompile) {
+                        exportPDF();
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    showCompileError(e.getMessage());
+                } catch (ExecutionException e) {
+                    showCompileError(e.getCause() == null ? e.getMessage() : e.getCause().getMessage());
+                }
+            }
+        }.execute();
+    }
+
+    private void setActionsEnabled(boolean enabled) {
+        loadButton.setEnabled(enabled);
+        saveButton.setEnabled(enabled);
+        compileButton.setEnabled(enabled);
+        setCursor(enabled ? Cursor.getDefaultCursor() : Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    }
+
+    private void showCompileError(String message) {
+        JOptionPane.showMessageDialog(this, "Erro: " + message +
+            "\n\nCertifique-se de ter o XeLaTeX instalado.", "Erro", JOptionPane.ERROR_MESSAGE);
     }
     
     private String updatePersonalInfo(String tex) {
@@ -694,16 +743,20 @@ public class ResumeEditorView extends JFrame {
             tex = tex.substring(0, posStart) + "\\position{" + formattedPos + "}" + tex.substring(posEnd);
         }
         
-        tex = tex.replaceFirst("\\\\name\\{[^}]*\\}\\{[^}]*\\}", "\\\\name{" + firstName + "}{" + lastName + "}");
-        tex = tex.replaceFirst("\\\\mobile\\{[^}]*\\}", "\\\\mobile{" + mobileField.getText() + "}");
-        tex = tex.replaceFirst("\\\\email\\{[^}]*\\}", "\\\\email{" + emailField.getText() + "}");
-        tex = tex.replaceFirst("\\\\github\\{[^}]*\\}", "\\\\github{" + githubField.getText() + "}");
-        tex = tex.replaceFirst("\\\\linkedin\\{[^}]*\\}", "\\\\linkedin{" + linkedinField.getText() + "}");
+        tex = replaceCommand(tex, "\\\\name\\{[^}]*\\}\\{[^}]*\\}", "\\name{" + firstName + "}{" + lastName + "}");
+        tex = replaceCommand(tex, "\\\\mobile\\{[^}]*\\}", "\\mobile{" + mobileField.getText() + "}");
+        tex = replaceCommand(tex, "\\\\email\\{[^}]*\\}", "\\email{" + emailField.getText() + "}");
+        tex = replaceCommand(tex, "\\\\github\\{[^}]*\\}", "\\github{" + githubField.getText() + "}");
+        tex = replaceCommand(tex, "\\\\linkedin\\{[^}]*\\}", "\\linkedin{" + linkedinField.getText() + "}");
         
         tex = updateOptions(tex);
         
         mainTexArea.setText(tex);
         return tex;
+    }
+
+    private String replaceCommand(String tex, String pattern, String replacement) {
+        return tex.replaceFirst(pattern, Matcher.quoteReplacement(replacement));
     }
     
     private String updateOptions(String tex) {
@@ -845,25 +898,13 @@ public class ResumeEditorView extends JFrame {
     }
     
     private void compilePDF() {
-        try {
-            saveFiles();
-            
-            int exitCode = service.compilePDF();
-            if (exitCode == 0) {
-                DefaultTableModel summaryModel = (DefaultTableModel) summaryTable.getModel();
-                String summary = summaryModel.getRowCount() > 0 && summaryModel.getValueAt(0, 0) != null 
-                               ? summaryModel.getValueAt(0, 0).toString() : "";
-                
-                service.addPDFMetadata(nameField.getText(), positions, summary, 
-                                      (DefaultTableModel) skillsTable.getModel());
-                exportPDF();
-            } else {
-                JOptionPane.showMessageDialog(this, "Erro na compilação", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erro: " + e.getMessage() + 
-                "\n\nCertifique-se de ter o XeLaTeX instalado.", "Erro", JOptionPane.ERROR_MESSAGE);
-        }
+        compileInBackground(false);
+    }
+
+    private record CompilationRequest(String mainTex, String summaryTex, String educationTex,
+                                      String experienceTex, String skillsTex, String photoPath,
+                                      String name, List<String> positions, String summary,
+                                      DefaultTableModel skillsModel) {
     }
     
     private void exportPDF() {

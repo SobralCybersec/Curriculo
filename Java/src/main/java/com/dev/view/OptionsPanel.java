@@ -158,12 +158,7 @@ public class OptionsPanel extends JPanel {
         formatPanel.add(photoFormatCombo);
         section.add(formatPanel);
         
-        photoEnabled.addActionListener(e -> {
-            boolean enabled = photoEnabled.isSelected();
-            photoPathField.setEnabled(enabled);
-            photoUploadBtn.setEnabled(enabled);
-            photoFormatCombo.setEnabled(enabled);
-        });
+        photoEnabled.addActionListener(e -> updatePhotoControls());
         
         return section;
     }
@@ -285,6 +280,14 @@ public class OptionsPanel extends JPanel {
     
     public void setPhotoEnabled(boolean enabled) {
         photoEnabled.setSelected(enabled);
+        updatePhotoControls();
+    }
+
+    private void updatePhotoControls() {
+        boolean enabled = photoEnabled.isSelected();
+        photoPathField.setEnabled(enabled);
+        photoUploadBtn.setEnabled(enabled);
+        photoFormatCombo.setEnabled(enabled);
     }
     
     private void selectPhoto() {
