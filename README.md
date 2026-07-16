@@ -32,6 +32,8 @@ Este repositório reúne estudos aprofundados sobre currículos modernos, com fo
 
 • XeLaTeX instalado (TeX Live ou MiKTeX)
 
+• Com MiKTeX, o editor instala no primeiro uso apenas os pacotes LaTeX ausentes do currículo
+
 • `\&` = Adiciona um & (ampersand)
 
 • `\textbf{texto}` = Texto em negrito
@@ -159,6 +161,10 @@ java -jar target/curriculo-editor.jar
 # Linux/Wayland: o launcher configura GTK3 e a compatibilidade com compositores não-reparenting
 ../scripts/curriculo-editor-linux target/curriculo-editor.jar
 ```
+
+Com MiKTeX, a primeira compilação pede autorização para baixar somente os pacotes ausentes. No Linux com TeX Live, instale primeiro a distribuição com suporte a XeLaTeX.
+
+Se o XeLaTeX não existir, a primeira compilação oferece o instalador oficial para Windows ou Linux. O editor verifica o compilador em cada nova compilação.
 </div>
 
 ---

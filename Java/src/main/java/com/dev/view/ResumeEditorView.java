@@ -1,6 +1,7 @@
 package com.dev.view;
 
 import com.dev.BuildInfo;
+import com.dev.service.MissingXeLaTeXException;
 import com.dev.service.ResumeService;
 import com.dev.util.AnimationUtil;
 import com.dev.util.LatexGenerator;
@@ -15,6 +16,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,7 @@ public class ResumeEditorView extends JFrame {
     private OptionsPanel optionsPanel;
     private ModernButton loadButton, saveButton, compileButton;
     private java.util.List<String> positions = new ArrayList<>();
+    private boolean latexInstallerPrompted;
     
     public ResumeEditorView() {
         this.service = new ResumeService();
@@ -706,7 +709,12 @@ public class ResumeEditorView extends JFrame {
                     Thread.currentThread().interrupt();
                     showCompileError(e.getMessage());
                 } catch (ExecutionException e) {
-                    showCompileError(e.getCause() == null ? e.getMessage() : e.getCause().getMessage());
+                    Throwable cause = e.getCause();
+                    if (cause instanceof MissingXeLaTeXException missingXeLaTeX) {
+                        showMissingXeLaTeXPrompt(missingXeLaTeX);
+                    } else {
+                        showCompileError(cause == null ? e.getMessage() : cause.getMessage());
+                    }
                 }
             }
         }.execute();
@@ -722,6 +730,33 @@ public class ResumeEditorView extends JFrame {
     private void showCompileError(String message) {
         JOptionPane.showMessageDialog(this, "Erro: " + message +
             "\n\nCertifique-se de ter o XeLaTeX instalado.", "Erro", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void showMissingXeLaTeXPrompt(MissingXeLaTeXException error) {
+        if (latexInstallerPrompted) {
+            showCompileError(error.getMessage());
+            return;
+        }
+        latexInstallerPrompted = true;
+        int choice = JOptionPane.showConfirmDialog(this,
+            "XeLaTeX é necessário para gerar PDFs.\n\nAbrir o instalador oficial agora?\n"
+                + "Depois da instalação, reinicie o editor.",
+            "Instalar XeLaTeX", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (choice == JOptionPane.YES_OPTION) {
+            openInstallerPage(error.getInstallationUri());
+        }
+    }
+
+    private void openInstallerPage(URI installationUri) {
+        try {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(installationUri);
+                return;
+            }
+        } catch (Exception ignored) {
+        }
+        JOptionPane.showMessageDialog(this, "Abra este link para instalar:\n" + installationUri,
+            "Instalador XeLaTeX", JOptionPane.INFORMATION_MESSAGE);
     }
     
     private String updatePersonalInfo(String tex) {

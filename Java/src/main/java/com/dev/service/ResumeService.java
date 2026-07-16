@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -125,18 +126,40 @@ public class ResumeService {
     }
     
     public int compilePDF() throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder("xelatex", "-interaction=nonstopmode", "resume.tex");
+        String compilerVersion = detectXeLaTeX();
+        ProcessBuilder pb = new ProcessBuilder(LatexEnvironment.compilationCommand(compilerVersion));
         pb.directory(basePath.toFile());
         pb.redirectErrorStream(true);
+        pb.redirectOutput(basePath.resolve("resume.xelatex.log").toFile());
         Process p = pb.start();
-        
-        BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            
+
+        if (!p.waitFor(Duration.ofMinutes(2).toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)) {
+            p.destroyForcibly();
+            throw new IOException("XeLaTeX excedeu o limite de 2 minutos. Veja resume.xelatex.log.");
         }
-        
-        return p.waitFor();
+        int exitCode = p.exitValue();
+        if (exitCode != 0) {
+            throw new IOException("Falha do XeLaTeX (código " + exitCode + "). Veja resume.xelatex.log.");
+        }
+        return exitCode;
+    }
+
+    private String detectXeLaTeX() throws IOException, InterruptedException {
+        Process process;
+        try {
+            process = new ProcessBuilder("xelatex", "--version").redirectErrorStream(true).start();
+        } catch (IOException e) {
+            throw new MissingXeLaTeXException(System.getProperty("os.name"), e);
+        }
+        if (!process.waitFor(10, java.util.concurrent.TimeUnit.SECONDS)) {
+            process.destroyForcibly();
+            throw new IOException("A verificação do XeLaTeX excedeu o limite de 10 segundos.");
+        }
+        String version = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        if (process.exitValue() != 0) {
+            throw new IOException("XeLaTeX não está funcional. Execute 'xelatex --version' para diagnosticar.");
+        }
+        return version;
     }
     
     public void addPDFMetadata(String name, List<String> positions, String summary, 

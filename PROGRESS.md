@@ -2,7 +2,7 @@
 
 ## Current goal
 
-- Add deterministic per-commit build versions without CI mutating repository files.
+- Detect XeLaTeX before compilation and install only missing template packages where the installed distribution supports it.
 
 ## Files touched
 
@@ -12,12 +12,15 @@
 - `Java/src/main/java/com/dev/Main.java`
 - `Java/src/main/java/com/dev/model/ResumeData.java` (deleted)
 - `Java/src/main/java/com/dev/service/ResumeService.java`
+- `Java/src/main/java/com/dev/service/LatexEnvironment.java`
+- `Java/src/main/java/com/dev/service/MissingXeLaTeXException.java`
 - `Java/src/main/java/com/dev/util/LatexParser.java`
 - `Java/src/main/java/com/dev/view/ResumeEditorView.java`
 - `Java/src/main/java/com/dev/view/PDFPreviewPanel.java`
 - `Java/src/main/java/com/dev/view/OptionsPanel.java`
 - `Java/src/main/java/com/dev/view/CreditsPanel.java`
 - `Java/src/test/java/com/dev/service/ResumeServiceTest.java`
+- `Java/src/test/java/com/dev/service/LatexEnvironmentTest.java`
 - `Java/src/test/java/com/dev/BuildInfoTest.java`
 - `Java/src/test/java/com/dev/util/LatexParserTest.java`
 - `Java/src/test/java/com/dev/util/LatexGeneratorTest.java`
@@ -43,6 +46,9 @@
 - CI remains Java 21/Maven based; release now ships the Linux launcher with the JAR and SHA-256 file.
 - Maven uses a CI-friendly `revision`: local builds remain `1.3.0-SNAPSHOT`, every CI build uses the commit SHA, and release tags supply the release version.
 - The packaged JAR manifest and the two visible version labels read the effective build version; CI never writes or commits a changed POM.
+- Before compiling, detect XeLaTeX with a bounded probe. MiKTeX receives its documented on-demand installer flag, so it downloads only missing template packages after user approval.
+- The first missing-engine compile offers the OS-specific official installer once per app session, then falls back to showing its HTTPS URL if the desktop browser cannot open it.
+- Do not silently bootstrap a system TeX engine: TeX Live user mode cannot install the XeLaTeX binary and Linux package management requires distro-specific privilege handling.
 
 ## Verified checks
 
@@ -55,11 +61,14 @@
 - [x] Earlier performance baseline: 72 DPI A4 preview allocated 1.9 MB; the optional 200 DPI preview added 14.7 MB. Magnifier-off avoids that extra allocation.
 - [x] `rtk mvn --batch-mode --no-transfer-progress -f Java/pom.xml -Drevision=1.3.0-dev.0123456789abcdef verify`: 31 tests passed.
 - [x] Shaded JAR manifest contains `Implementation-Version: 1.3.0-dev.0123456789abcdef`.
+- [x] `rtk mvn --batch-mode --no-transfer-progress -f Java/pom.xml verify`: 34 tests passed, including MiKTeX/TeX Live command coverage.
 
 ## Remaining work
 
 - [x] Move PDF rendering off the EDT and add asynchronous preview regression coverage.
 - [x] Provide a Linux/Wayland launcher and attach it to releases.
 - [x] Generate unique commit-versioned CI artifacts and tag-versioned release artifacts without CI commits.
-- [ ] Future: make multi-file writes atomic; preserve compiler diagnostics and add a compiler timeout.
-- [ ] Environment: repair XeLaTeX format (`xelatex.fmt`) before end-to-end compile profiling.
+- [x] Add bounded XeLaTeX detection, compile logs/timeouts, and MiKTeX on-demand package installation.
+- [x] Prompt for the official first-run XeLaTeX installer when the compiler is absent; keep checks on every compile.
+- [ ] Future: make multi-file writes atomic.
+- [ ] Environment: repair the local XeLaTeX format (`xelatex.fmt`) before end-to-end compile profiling.
