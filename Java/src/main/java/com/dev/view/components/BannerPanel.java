@@ -37,24 +37,37 @@ public class BannerPanel extends JPanel {
         );
         g2.setPaint(gradient);
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+
+        g2.setColor(UITheme.BORDER);
+        g2.setStroke(new BasicStroke(1));
+        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 15, 15);
         
         g2.setColor(UITheme.ACCENT);
-        g2.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        g2.setFont(UITheme.font(Font.BOLD, 28));
         FontMetrics fm = g2.getFontMetrics();
         int titleY = (getHeight() - fm.getHeight()) / 2 + fm.getAscent() - 10;
-        g2.drawString(title, 30, titleY);
+        g2.drawString(fitText(title, fm, getWidth() - 48), 24, titleY);
         
         g2.setColor(UITheme.FOREGROUND);
-        g2.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        g2.setFont(UITheme.font(Font.PLAIN, 13));
         fm = g2.getFontMetrics();
         int subtitleY = titleY + fm.getHeight() + 5;
-        g2.drawString(subtitle, 30, subtitleY);
+        g2.drawString(fitText(subtitle, fm, getWidth() - 48), 24, subtitleY);
         
         g2.setColor(UITheme.ACCENT);
         g2.setStroke(new BasicStroke(3));
-        g2.drawLine(30, getHeight() - 15, 200, getHeight() - 15);
+        g2.drawLine(24, getHeight() - 14, Math.max(24, Math.min(190, getWidth() - 24)), getHeight() - 14);
         
         g2.dispose();
+    }
+
+    private static String fitText(String text, FontMetrics metrics, int maxWidth) {
+        if (text == null) return "";
+        if (maxWidth <= 0 || metrics.stringWidth(text) <= maxWidth) return text;
+        String ellipsis = "…";
+        int end = text.length();
+        while (end > 0 && metrics.stringWidth(text.substring(0, end) + ellipsis) > maxWidth) end--;
+        return text.substring(0, end) + ellipsis;
     }
     
     public void setTitle(String title) {

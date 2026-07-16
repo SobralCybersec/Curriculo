@@ -1,6 +1,7 @@
 package com.dev.view.components;
 
 import com.dev.util.AnimationUtil;
+import com.dev.util.UITheme;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,7 +13,7 @@ import java.awt.event.MouseEvent;
 public class ModernTextField extends JTextField {
     private String placeholder;
     private Icon icon;
-    private Color placeholderColor = new Color(85, 85, 85);
+    private Color placeholderColor = UITheme.TEXT_MUTED;
     private boolean isFocused = false;
     private boolean isEmpty = true;
     private int cornerRadius = 12;
@@ -33,12 +34,12 @@ public class ModernTextField extends JTextField {
     }
     
     private void init() {
-        setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        setBackground(new Color(26, 26, 26));
-        setForeground(new Color(175, 177, 179));
-        setCaretColor(new Color(175, 177, 179));
+        setFont(UITheme.font(Font.PLAIN, 13));
+        setBackground(UITheme.SURFACE);
+        setForeground(UITheme.FOREGROUND);
+        setCaretColor(UITheme.ACCENT_MUTED);
         setOpaque(false);
-        setBorder(BorderFactory.createEmptyBorder(10, icon != null ? 35 : 15, 10, 15));
+        updateInsets();
         
         addFocusListener(new FocusAdapter() {
             @Override
@@ -82,17 +83,17 @@ public class ModernTextField extends JTextField {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         if (isFocused) {
-            g2.setColor(new Color(32, 32, 32));
+            g2.setColor(UITheme.SURFACE_RAISED);
         } else {
             g2.setColor(getBackground());
         }
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
         
         if (isFocused) {
-            g2.setColor(new Color(122, 162, 247));
+            g2.setColor(UITheme.ACCENT);
             g2.setStroke(new BasicStroke(2));
         } else {
-            g2.setColor(new Color(34, 34, 34));
+            g2.setColor(UITheme.BORDER);
             g2.setStroke(new BasicStroke(1));
         }
         g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, cornerRadius, cornerRadius);
@@ -127,7 +128,13 @@ public class ModernTextField extends JTextField {
     
     public void setIcon(Icon icon) {
         this.icon = icon;
+        updateInsets();
+        revalidate();
         repaint();
+    }
+
+    private void updateInsets() {
+        setBorder(BorderFactory.createEmptyBorder(10, icon != null ? 35 : 15, 10, 15));
     }
     
     public boolean validateNotEmpty() {

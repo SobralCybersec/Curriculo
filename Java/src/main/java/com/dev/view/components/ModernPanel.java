@@ -1,5 +1,7 @@
 package com.dev.view.components;
 
+import com.dev.util.UITheme;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -9,13 +11,13 @@ public class ModernPanel extends JPanel {
     
     public ModernPanel() {
         setOpaque(false);
-        setBackground(new Color(45, 45, 48));
+        setBackground(UITheme.BACKGROUND);
     }
     
     public ModernPanel(LayoutManager layout) {
         super(layout);
         setOpaque(false);
-        setBackground(new Color(45, 45, 48));
+        setBackground(UITheme.BACKGROUND);
     }
     
     public void setCornerRadius(int radius) {

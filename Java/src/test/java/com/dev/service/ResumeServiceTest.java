@@ -86,4 +86,89 @@ class ResumeServiceTest {
         assertEquals("main", service.loadMainTex());
         assertTrue(Files.notExists(tempDir.resolve("profile.png")));
     }
+
+    @Test
+    void stagesBundledClassAndFontsForCompilation(@TempDir Path tempDir) throws Exception {
+        ResumeService service = new ResumeService(tempDir);
+
+        service.saveAll("main", "summary", "education", "experience", "skills", null);
+
+        assertTrue(Files.exists(tempDir.resolve("curriculo.cls")));
+        assertTrue(Files.size(tempDir.resolve("curriculo.cls")) > 0);
+        assertTrue(Files.exists(tempDir.resolve("fontdir/SourceSans3-Regular.ttf")));
+    }
+
+    @Test
+    void restoresADeletedBundledFontWithoutOverwritingOtherFiles(@TempDir Path tempDir) throws Exception {
+        ResumeService service = new ResumeService(tempDir);
+        service.saveAll("main", "summary", "education", "experience", "skills", null);
+        Path font = tempDir.resolve("fontdir/SourceSans3-Regular.ttf");
+        Path customFile = tempDir.resolve("fontdir/custom.txt");
+        Files.delete(font);
+        Files.writeString(customFile, "keep me");
+
+        service.saveAll("main", "summary", "education", "experience", "skills", null);
+
+        assertTrue(Files.exists(font));
+        assertEquals("keep me", Files.readString(customFile));
+    }
+
+    @Test
+    void rejectsMetadataWhenNoPdfExists(@TempDir Path tempDir) {
+        ResumeService service = new ResumeService(tempDir);
+        DefaultTableModel skills = new DefaultTableModel(new String[]{"Category", "Skills"}, 0);
+
+        assertThrows(java.io.FileNotFoundException.class,
+            () -> service.addPDFMetadata("Ana", List.of(), "", skills));
+    }
+
+    @Test
+    void preservesAnExistingCustomClassFile(@TempDir Path tempDir) throws Exception {
+        ResumeService service = new ResumeService(tempDir);
+        Path classFile = tempDir.resolve("curriculo.cls");
+        Files.writeString(classFile, "custom class");
+
+        service.saveAll("main", "summary", "education", "experience", "skills", null);
+
+        assertEquals("custom class", Files.readString(classFile));
+    }
+
+    @Test
+    void copiesPhotosWithTheirLastExtension(@TempDir Path tempDir) throws Exception {
+        Path photo = tempDir.resolve("avatar.JPEG");
+        Files.writeString(photo, "image bytes");
+        ResumeService service = new ResumeService(tempDir.resolve("output"));
+
+        service.saveAll("main", "summary", "education", "experience", "skills", photo.toString());
+
+        assertEquals("image bytes", Files.readString(tempDir.resolve("output/profile.JPEG")));
+    }
+
+    @Test
+    void loadsEveryBundledSectionBeforeFirstSave(@TempDir Path tempDir) throws Exception {
+        ResumeService service = new ResumeService(tempDir);
+
+        assertTrue(service.loadSummaryTex().contains("cvparagraph"));
+        assertTrue(service.loadEducationTex().contains("cventries"));
+        assertTrue(service.loadExperienceTex().contains("cventries"));
+        assertTrue(service.loadSkillsTex().contains("cvskills"));
+    }
+
+    @Test
+    void writesEmptyMetadataForEmptyInputs(@TempDir Path tempDir) throws Exception {
+        ResumeService service = new ResumeService(tempDir);
+        try (PDDocument document = new PDDocument()) {
+            document.addPage(new PDPage(new PDRectangle(100, 100)));
+            document.save(service.getPDFFile());
+        }
+        DefaultTableModel skills = new DefaultTableModel(new String[]{"Category", "Skills"}, 0);
+
+        service.addPDFMetadata("Ana", List.of(), null, skills);
+
+        try (PDDocument document = PDDocument.load(service.getPDFFile())) {
+            assertEquals("", document.getDocumentInformation().getTitle());
+            assertEquals("", document.getDocumentInformation().getKeywords());
+            assertEquals("", document.getDocumentInformation().getCustomMetadataValue("Description"));
+        }
+    }
 }

@@ -103,22 +103,23 @@ public class ResumeService {
         }
         
         Path fontDir = basePath.resolve("fontdir");
-        if (!Files.exists(fontDir)) {
-            Files.createDirectories(fontDir);
-            String[] fonts = {
-                "SourceSans3-Black.ttf", "SourceSans3-BlackIt.ttf",
-                "SourceSans3-Bold.ttf", "SourceSans3-BoldIt.ttf",
-                "SourceSans3-ExtraLight.ttf", "SourceSans3-ExtraLightIt.ttf",
-                "SourceSans3-It.ttf", "SourceSans3-Light.ttf",
-                "SourceSans3-LightIt.ttf", "SourceSans3-Medium.ttf",
-                "SourceSans3-MediumIt.ttf", "SourceSans3-Regular.ttf",
-                "SourceSans3-Semibold.ttf", "SourceSans3-SemiboldIt.ttf"
-            };
-            
-            for (String font : fonts) {
+        Files.createDirectories(fontDir);
+        String[] fonts = {
+            "SourceSans3-Black.ttf", "SourceSans3-BlackIt.ttf",
+            "SourceSans3-Bold.ttf", "SourceSans3-BoldIt.ttf",
+            "SourceSans3-ExtraLight.ttf", "SourceSans3-ExtraLightIt.ttf",
+            "SourceSans3-It.ttf", "SourceSans3-Light.ttf",
+            "SourceSans3-LightIt.ttf", "SourceSans3-Medium.ttf",
+            "SourceSans3-MediumIt.ttf", "SourceSans3-Regular.ttf",
+            "SourceSans3-Semibold.ttf", "SourceSans3-SemiboldIt.ttf"
+        };
+
+        for (String font : fonts) {
+            Path target = fontDir.resolve(font);
+            if (!Files.exists(target)) {
                 try (InputStream is = getClass().getResourceAsStream("/exemplos/fontdir/" + font)) {
                     if (is != null) {
-                        Files.copy(is, fontDir.resolve(font), StandardCopyOption.REPLACE_EXISTING);
+                        Files.copy(is, target);
                     }
                 }
             }

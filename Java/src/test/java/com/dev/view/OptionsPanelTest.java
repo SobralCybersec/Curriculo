@@ -77,6 +77,68 @@ class OptionsPanelTest {
         assertEquals(Map.of(), onEdt(panel::getEnabledSocials));
     }
 
+    @Test
+    void retainsPhotoPathButHidesItWhenPhotoIsDisabled() throws Exception {
+        OptionsPanel panel = onEdt(OptionsPanel::new);
+
+        onEdt(() -> {
+            panel.setPhotoPath("/tmp/profile.png");
+            panel.setPhotoEnabled(true);
+            return null;
+        });
+        assertEquals("/tmp/profile.png", onEdt(panel::getPhotoPath));
+
+        onEdt(() -> {
+            panel.setPhotoEnabled(false);
+            return null;
+        });
+        assertNull(onEdt(panel::getPhotoPath));
+    }
+
+    @Test
+    void clearsSupportedSocialWhenSetToNull() throws Exception {
+        OptionsPanel panel = onEdt(OptionsPanel::new);
+
+        onEdt(() -> {
+            panel.setSocial("telegram", "ana-dev");
+            panel.setSocial("telegram", null);
+            return null;
+        });
+
+        assertEquals(Map.of(), onEdt(panel::getEnabledSocials));
+    }
+
+    @Test
+    void mapsEverySupportedPhotoFormat() throws Exception {
+        OptionsPanel panel = onEdt(OptionsPanel::new);
+
+        onEdt(() -> {
+            panel.setPhotoEnabled(true);
+            panel.setPhotoFormat("rectangle");
+            return null;
+        });
+        assertEquals("rectangle", onEdt(panel::getPhotoFormat));
+
+        onEdt(() -> {
+            panel.setPhotoFormat("edge");
+            return null;
+        });
+        assertEquals("edge", onEdt(panel::getPhotoFormat));
+    }
+
+    @Test
+    void resetsUnknownPhotoFormatsToDefault() throws Exception {
+        OptionsPanel panel = onEdt(OptionsPanel::new);
+
+        onEdt(() -> {
+            panel.setPhotoEnabled(true);
+            panel.setPhotoFormat("unknown");
+            return null;
+        });
+
+        assertNull(onEdt(panel::getPhotoFormat));
+    }
+
     private static <T> T onEdt(Callable<T> action) throws Exception {
         if (SwingUtilities.isEventDispatchThread()) return action.call();
         FutureTask<T> task = new FutureTask<>(action);

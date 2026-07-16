@@ -2,7 +2,7 @@
 
 ## Current goal
 
-- Detect XeLaTeX before compilation and install only missing template packages where the installed distribution supports it.
+- Modernize the Swing UI with a coherent vector icon system and clearer editor hierarchy.
 
 ## Files touched
 
@@ -15,10 +15,18 @@
 - `Java/src/main/java/com/dev/service/LatexEnvironment.java`
 - `Java/src/main/java/com/dev/service/MissingXeLaTeXException.java`
 - `Java/src/main/java/com/dev/util/LatexParser.java`
+- `Java/src/main/java/com/dev/util/UITheme.java`
 - `Java/src/main/java/com/dev/view/ResumeEditorView.java`
 - `Java/src/main/java/com/dev/view/PDFPreviewPanel.java`
 - `Java/src/main/java/com/dev/view/OptionsPanel.java`
 - `Java/src/main/java/com/dev/view/CreditsPanel.java`
+- `Java/src/main/java/com/dev/view/components/IconFactory.java`
+- `Java/src/main/java/com/dev/view/components/BannerPanel.java`
+- `Java/src/main/java/com/dev/view/components/ModernButton.java`
+- `Java/src/main/java/com/dev/view/components/ModernPanel.java`
+- `Java/src/main/java/com/dev/view/components/ModernTextField.java`
+- `Java/src/main/java/com/dev/view/components/RoundedScrollPane.java`
+- `Java/src/main/java/com/dev/view/components/SideMenu.java`
 - `Java/src/test/java/com/dev/service/ResumeServiceTest.java`
 - `Java/src/test/java/com/dev/service/LatexEnvironmentTest.java`
 - `Java/src/test/java/com/dev/BuildInfoTest.java`
@@ -28,6 +36,14 @@
 - `Java/src/test/java/com/dev/util/UIThemeTest.java`
 - `Java/src/test/java/com/dev/view/OptionsPanelTest.java`
 - `Java/src/test/java/com/dev/view/PDFPreviewPanelTest.java`
+- `Java/src/test/java/com/dev/view/components/IconFactoryTest.java`
+- `Java/src/test/java/com/dev/view/components/BannerPanelTest.java`
+- `Java/src/test/java/com/dev/view/components/ModernButtonTest.java`
+- `Java/src/test/java/com/dev/view/components/ModernPanelTest.java`
+- `Java/src/test/java/com/dev/view/components/ModernTextFieldTest.java`
+- `Java/src/test/java/com/dev/view/components/RoundedScrollPaneTest.java`
+- `Java/src/test/java/com/dev/view/components/SideMenuTest.java`
+- `Java/src/test/java/com/dev/view/ResumeEditorViewLayoutTest.java`
 - `.github/workflows/ci.yml`
 - `.github/workflows/release.yml`
 - `.github/workflows/code-quality.yml`
@@ -49,6 +65,14 @@
 - Before compiling, detect XeLaTeX with a bounded probe. MiKTeX receives its documented on-demand installer flag, so it downloads only missing template packages after user approval.
 - The first missing-engine compile offers the OS-specific official installer once per app session, then falls back to showing its HTTPS URL if the desktop browser cannot open it.
 - Do not silently bootstrap a system TeX engine: TeX Live user mode cannot install the XeLaTeX binary and Linux package management requires distro-specific privilege handling.
+- Shade removes classpath-inapplicable `module-info.class` files, creates one application manifest, omits Maven build metadata, merges Apache notices and preserves all dependency license text.
+- Tests avoid real XeLaTeX, package installation, network, and top-level windows; they cover pure command/parser/generator logic, `@TempDir` service state, and bounded Swing components.
+- Repair missing bundled fonts inside an existing `fontdir` instead of leaving a partial template tree unrecoverable.
+- Component coverage uses deterministic constructors and `BufferedImage` paint smoke checks, never visual pixel snapshots, timers, or desktop integration.
+- Use a restrained dark “editorial workstation” palette, logical platform fonts, consistent stroked vector icons, persistent navigation selection, and one primary compile action; preserve all editor actions and LaTeX contracts.
+- Keep icons dependency-free and rendered at runtime so Linux/Wayland scaling stays crisp without network or raster assets.
+- Stack the PDF title and controls at compact logical widths, hide nonessential action help when space is tight, and derive the initial split from available width instead of a fixed pixel divider.
+- Discard any late high-resolution PDF render after the magnifier is disabled; this preserves the existing on-demand memory contract.
 
 ## Verified checks
 
@@ -62,6 +86,14 @@
 - [x] `rtk mvn --batch-mode --no-transfer-progress -f Java/pom.xml -Drevision=1.3.0-dev.0123456789abcdef verify`: 31 tests passed.
 - [x] Shaded JAR manifest contains `Implementation-Version: 1.3.0-dev.0123456789abcdef`.
 - [x] `rtk mvn --batch-mode --no-transfer-progress -f Java/pom.xml verify`: 34 tests passed, including MiKTeX/TeX Live command coverage.
+- [x] `rtk mvn --batch-mode --no-transfer-progress -f Java/pom.xml clean verify`: 34 tests passed with no Shade overlap or module warnings.
+- [x] Shaded JAR has one manifest, `META-INF/LICENSE`, `META-INF/NOTICE`, and no `module-info.class`.
+- [x] `rtk mvn --batch-mode --no-transfer-progress -f Java/pom.xml verify`: 53 tests passed after the regression-suite expansion.
+- [x] `rtk mvn --batch-mode --no-transfer-progress -f Java/pom.xml verify`: 75 tests passed after the second test expansion.
+- [x] `rtk mvn --batch-mode --no-transfer-progress -f Java/pom.xml -DskipTests compile`: UI modernization compiles successfully.
+- [x] Targeted Swing suite: 24 tests passed for theme, icons, navigation, controls, and PDF preview.
+- [x] `rtk mvn --batch-mode --no-transfer-progress -f Java/pom.xml verify`: 84 tests passed with no warnings.
+- [x] Xvfb visual smoke at 1600×1000: main editor, selected navigation, vector icons, stacked PDF toolbar, and action hierarchy rendered without overlap or truncated button labels.
 
 ## Remaining work
 
@@ -70,5 +102,10 @@
 - [x] Generate unique commit-versioned CI artifacts and tag-versioned release artifacts without CI commits.
 - [x] Add bounded XeLaTeX detection, compile logs/timeouts, and MiKTeX on-demand package installation.
 - [x] Prompt for the official first-run XeLaTeX installer when the compiler is absent; keep checks on every compile.
+- [x] Remove Shade warnings while preserving manifest, service loading, license, and notice resources.
+- [x] Expand tests for generator/parser boundaries, jqwik entry round-trips, resource staging, environment commands, options state, and latest PDF preview load.
+- [x] Add component smoke tests plus resource fallback, metadata, photo-extension, exact command, multi-page preview, and photo-format coverage.
+- [x] Add regression coverage for the new icon set, button variants, navigation selection, responsive split, compact banners, and preview shell.
+- [x] Run the full Maven verification and visual smoke the updated Swing shell.
 - [ ] Future: make multi-file writes atomic.
 - [ ] Environment: repair the local XeLaTeX format (`xelatex.fmt`) before end-to-end compile profiling.

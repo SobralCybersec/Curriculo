@@ -6,6 +6,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class LatexParserTest {
 
@@ -103,5 +104,56 @@ class LatexParserTest {
 
         assertEquals(5, target.getColumnCount());
         assertEquals("Description", target.getValueAt(0, 4));
+    }
+
+    @Test
+    void clearsSummaryModelWhenClosingMarkerIsMissing() {
+        DefaultTableModel model = new DefaultTableModel(new String[]{"Summary"}, 0);
+        model.addRow(new Object[]{"Old summary"});
+
+        LatexParser.parseSummary("\\begin{cvparagraph}Unfinished", model);
+
+        assertEquals(0, model.getRowCount());
+    }
+
+    @Test
+    void returnsRemainingPositionTextWhenClosingBraceIsMissing() {
+        assertEquals("Developer{Platform", LatexParser.extractValue("\\position{Developer{Platform", "\\position{", "}"));
+    }
+
+    @Test
+    void parsesMalformedEntriesWithoutThrowing() {
+        DefaultTableModel model = new DefaultTableModel(new String[]{"A", "B", "C", "D", "E"}, 0);
+
+        assertDoesNotThrow(() -> LatexParser.parseEducation("\\cventry {Only one field}", model));
+        assertEquals(1, model.getRowCount());
+        assertEquals("Only one field", model.getValueAt(0, 0));
+        assertEquals("", model.getValueAt(0, 4));
+    }
+
+    @Test
+    void clearsSkillsModelForAnEmptySkillSection() {
+        DefaultTableModel model = new DefaultTableModel(new String[]{"Category", "Skills"}, 0);
+        model.addRow(new Object[]{"Old", "Value"});
+
+        LatexParser.parseSkills("\\begin{cvskills}\\end{cvskills}", model);
+
+        assertEquals(0, model.getRowCount());
+    }
+
+    @Test
+    void replacesPreviousEducationRowsOnSubsequentParse() {
+        String[] columns = {"Degree", "School", "Location", "Dates", "Description"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        DefaultTableModel first = new DefaultTableModel(
+            new Object[][]{{"First", "School", "City", "2020", ""}}, columns);
+        DefaultTableModel second = new DefaultTableModel(
+            new Object[][]{{"Second", "School", "City", "2024", ""}}, columns);
+
+        LatexParser.parseEducation(LatexGenerator.generateEducation(new JTable(first)), model);
+        LatexParser.parseEducation(LatexGenerator.generateEducation(new JTable(second)), model);
+
+        assertEquals(1, model.getRowCount());
+        assertEquals("Second", model.getValueAt(0, 0));
     }
 }

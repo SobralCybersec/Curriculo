@@ -1,7 +1,6 @@
 package com.dev.util;
 
 import com.dev.view.components.RoundedScrollPane;
-import com.formdev.flatlaf.FlatDarkLaf;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -13,21 +12,20 @@ public final class UITheme {
     private UITheme() {
     }
 
-    public static final Color BACKGROUND   = new Color(45, 45, 48);
-
-    public static final Color SURFACE      = new Color(26, 26, 26);
-
-    public static final Color BORDER       = new Color(34, 34, 34);
-
-    public static final Color SELECTED     = new Color(62, 62, 64);
-
-    public static final Color FOREGROUND   = new Color(175, 173, 179);
-
-    public static final Color ACCENT       = new Color(122, 162, 247);
-
-    public static final Color ACCENT_MUTED = new Color(192, 202, 245);
-
-    public static final Color PRESSED      = new Color(78, 78, 80);
+    public static final Color BACKGROUND       = new Color(13, 17, 23);
+    public static final Color SURFACE          = new Color(21, 27, 35);
+    public static final Color SURFACE_RAISED   = new Color(27, 36, 48);
+    public static final Color PREVIEW_CANVAS   = new Color(32, 40, 50);
+    public static final Color BORDER           = new Color(42, 53, 67);
+    public static final Color SELECTED         = new Color(36, 49, 73);
+    public static final Color FOREGROUND       = new Color(220, 229, 240);
+    public static final Color TEXT_STRONG      = new Color(247, 250, 252);
+    public static final Color TEXT_MUTED       = new Color(139, 152, 169);
+    public static final Color ACCENT           = new Color(124, 156, 255);
+    public static final Color ACCENT_MUTED     = new Color(185, 199, 255);
+    public static final Color ACCENT_PRESSED   = new Color(94, 128, 230);
+    public static final Color PRESSED          = new Color(51, 68, 100);
+    public static final Color DANGER           = new Color(240, 128, 128);
 
     public static final int BUTTON_HEIGHT         = 42;
 
@@ -42,9 +40,13 @@ public final class UITheme {
     public static final int WINDOW_HEIGHT         = 900;
 
     public static void applyFlatLaf() {
-        UIManager.put("Button.arc", 8);
-        UIManager.put("Component.arc", 8);
-        UIManager.put("TextComponent.arc", 8);
+        UIManager.put("defaultFont", font(Font.PLAIN, 13));
+        UIManager.put("Button.arc", 12);
+        UIManager.put("Component.arc", 10);
+        UIManager.put("TextComponent.arc", 10);
+        UIManager.put("Component.focusWidth", 1);
+        UIManager.put("Component.focusColor", ACCENT);
+        UIManager.put("Component.borderColor", BORDER);
         UIManager.put("ScrollBar.showButtons", false);
         UIManager.put("ScrollBar.width", 12);
         UIManager.put("TabbedPane.tabHeight", 32);
@@ -54,7 +56,7 @@ public final class UITheme {
 
         UIManager.put("Panel.background",          BACKGROUND);
         UIManager.put("Button.background",         SURFACE);
-        UIManager.put("Button.foreground",         FOREGROUND);
+        UIManager.put("Button.foreground",         TEXT_STRONG);
         UIManager.put("TextField.background",      SURFACE);
         UIManager.put("TextField.foreground",      FOREGROUND);
         UIManager.put("TextArea.background",       SURFACE);
@@ -72,9 +74,19 @@ public final class UITheme {
         UIManager.put("TabbedPane.foreground",     FOREGROUND);
         UIManager.put("ScrollPane.background",     BACKGROUND);
         UIManager.put("Viewport.background",       BACKGROUND);
-        UIManager.put("ScrollBar.track",           new Color(42, 42, 44));
-        UIManager.put("ScrollBar.thumb",           new Color(61, 61, 61));
+        UIManager.put("ScrollBar.track",           BACKGROUND);
+        UIManager.put("ScrollBar.thumb",           BORDER);
         UIManager.put("TitledBorder.titleColor",   FOREGROUND);
+        UIManager.put("Separator.foreground",      BORDER);
+        UIManager.put("TextField.caretForeground", ACCENT_MUTED);
+        UIManager.put("TextField.selectionBackground", SELECTED);
+        UIManager.put("TextArea.selectionBackground", SELECTED);
+    }
+
+    public static Font font(int style, float size) {
+        Font base = UIManager.getFont("Label.font");
+        if (base == null) base = new Font(Font.SANS_SERIF, Font.PLAIN, Math.round(size));
+        return base.deriveFont(style, size);
     }
 
     public static JPanel wrapInScrollPanel(JPanel content) {
@@ -92,7 +104,7 @@ public final class UITheme {
     }
 
     public static void styleTable(JTable table) {
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        table.setFont(font(Font.PLAIN, 13));
         table.setRowHeight(28);
         table.setBackground(SURFACE);
         table.setForeground(FOREGROUND);
@@ -103,7 +115,7 @@ public final class UITheme {
         table.setIntercellSpacing(new Dimension(1, 1));
 
         JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        header.setFont(font(Font.BOLD, 13));
         header.setBackground(SURFACE);
         header.setForeground(FOREGROUND);
     }

@@ -47,15 +47,17 @@ public class ResumeEditorView extends JFrame {
     
     private void initUI() {
         setTitle("Currículo Maker - Editor Profissional");
-        setSize(UITheme.WINDOW_WIDTH, UITheme.WINDOW_HEIGHT);
+        Rectangle available = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        setSize(Math.max(1, Math.min(UITheme.WINDOW_WIDTH, available.width - 24)),
+                Math.max(1, Math.min(UITheme.WINDOW_HEIGHT, available.height - 24)));
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationByPlatform(true);
         setUndecorated(false);
         getContentPane().setBackground(UITheme.BACKGROUND);
         
-        JPanel mainContainer = new JPanel(new BorderLayout(0, 10));
+        JPanel mainContainer = new JPanel(new BorderLayout());
         mainContainer.setBackground(UITheme.BACKGROUND);
-        mainContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        mainContainer.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         
         JPanel cardPanel = new JPanel(new CardLayout());
         cardPanel.setBackground(UITheme.BACKGROUND);
@@ -95,13 +97,15 @@ public class ResumeEditorView extends JFrame {
         contentPanel.add(sideMenu, BorderLayout.WEST);
         
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setDividerLocation(950);
+        splitPane.setDividerLocation(initialDividerLocation(getWidth()));
         splitPane.setResizeWeight(0.6);
         splitPane.setBorder(null);
         splitPane.setDividerSize(8);
         splitPane.setBackground(UITheme.BACKGROUND);
         
         pdfPreview = new PDFPreviewPanel();
+        cardPanel.setMinimumSize(new Dimension(0, 0));
+        pdfPreview.setMinimumSize(new Dimension(0, 0));
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent event) {
@@ -114,15 +118,42 @@ public class ResumeEditorView extends JFrame {
         
         contentPanel.add(splitPane, BorderLayout.CENTER);
         
-        ModernPanel bottomPanel = new ModernPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        JPanel bottomPanel = new JPanel(new BorderLayout(16, 0));
+        bottomPanel.setBackground(UITheme.SURFACE);
+        bottomPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, UITheme.BORDER),
+                BorderFactory.createEmptyBorder(10, 14, 10, 10)));
+
+        JLabel actionHint = new JLabel("Edite os dados e gere uma nova prévia quando estiver pronto.");
+        actionHint.setFont(UITheme.font(Font.PLAIN, 12));
+        actionHint.setForeground(UITheme.TEXT_MUTED);
+        bottomPanel.add(actionHint, BorderLayout.WEST);
+        bottomPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent event) {
+                actionHint.setVisible(bottomPanel.getWidth() >= 820);
+            }
+        });
+
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        actions.setOpaque(false);
         
-        loadButton = new ModernButton("  Carregar", IconFactory.createLoadIcon(16, UITheme.FOREGROUND));
-        saveButton = new ModernButton("  Salvar", IconFactory.createSaveIcon(16, UITheme.FOREGROUND));
-        compileButton = new ModernButton("  Compilar PDF", IconFactory.createCompileIcon(16, UITheme.FOREGROUND));
+        loadButton = new ModernButton("Carregar", IconFactory.createLoadIcon(17, UITheme.TEXT_MUTED));
+        saveButton = new ModernButton("Salvar", IconFactory.createSaveIcon(17, UITheme.FOREGROUND));
+        compileButton = new ModernButton("Compilar PDF", IconFactory.createCompileIcon(17, UITheme.BACKGROUND));
+        loadButton.setStyle(ModernButton.Style.GHOST);
+        saveButton.setStyle(ModernButton.Style.SECONDARY);
+        compileButton.setStyle(ModernButton.Style.PRIMARY);
+        loadButton.setToolTipText("Carregar dados dos arquivos LaTeX");
+        saveButton.setToolTipText("Salvar alterações sem compilar");
+        compileButton.setToolTipText("Salvar, compilar e atualizar a prévia");
+        loadButton.setIconTextGap(9);
+        saveButton.setIconTextGap(9);
+        compileButton.setIconTextGap(9);
         
-        loadButton.setPreferredSize(new Dimension(140, UITheme.BUTTON_HEIGHT));
-        saveButton.setPreferredSize(new Dimension(140, UITheme.BUTTON_HEIGHT));
-        compileButton.setPreferredSize(new Dimension(160, UITheme.BUTTON_HEIGHT));
+        loadButton.setPreferredSize(new Dimension(132, UITheme.BUTTON_HEIGHT));
+        saveButton.setPreferredSize(new Dimension(132, UITheme.BUTTON_HEIGHT));
+        compileButton.setPreferredSize(new Dimension(178, UITheme.BUTTON_HEIGHT));
         
         loadButton.addActionListener(e -> {
             loadFiles();
@@ -134,14 +165,21 @@ public class ResumeEditorView extends JFrame {
             compilePDF();
         });
         
-        bottomPanel.add(loadButton);
-        bottomPanel.add(saveButton);
-        bottomPanel.add(compileButton);
+        actions.add(loadButton);
+        actions.add(saveButton);
+        actions.add(compileButton);
+        bottomPanel.add(actions, BorderLayout.EAST);
         
         mainContainer.add(contentPanel, BorderLayout.CENTER);
         mainContainer.add(bottomPanel, BorderLayout.SOUTH);
         
         add(mainContainer);
+    }
+
+    static int initialDividerLocation(int windowWidth) {
+        int usableWidth = Math.max(1, windowWidth - UITheme.SIDE_MENU_COLLAPSED_W - 58);
+        int preferred = Math.max(260, Math.round(usableWidth * 0.61f));
+        return Math.min(preferred, Math.max(1, usableWidth - 160));
     }
     
     private JPanel createPersonalPanel() {

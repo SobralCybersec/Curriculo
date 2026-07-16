@@ -1,5 +1,6 @@
 package com.dev.view;
 
+import com.dev.util.UITheme;
 import com.dev.view.components.ModernButton;
 
 import javax.swing.*;
@@ -23,11 +24,11 @@ public class OptionsPanel extends JPanel {
     
     public OptionsPanel() {
         setLayout(new BorderLayout());
-        setBackground(new Color(45, 45, 48));
+        setBackground(UITheme.BACKGROUND);
         
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBackground(new Color(45, 45, 48));
+        mainPanel.setBackground(UITheme.BACKGROUND);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
         mainPanel.add(createQuoteSection());
@@ -41,7 +42,7 @@ public class OptionsPanel extends JPanel {
         
         JScrollPane scroll = new JScrollPane(mainPanel);
         scroll.setBorder(null);
-        scroll.getViewport().setBackground(new Color(45, 45, 48));
+        scroll.getViewport().setBackground(UITheme.BACKGROUND);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         add(scroll, BorderLayout.CENTER);
     }
@@ -51,9 +52,9 @@ public class OptionsPanel extends JPanel {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(26, 26, 26));
+                g2.setColor(UITheme.SURFACE);
                 g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 15, 15));
-                g2.setColor(new Color(34, 34, 34));
+                g2.setColor(UITheme.BORDER);
                 g2.setStroke(new BasicStroke(1));
                 g2.draw(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, 15, 15));
                 g2.dispose();
@@ -68,25 +69,25 @@ public class OptionsPanel extends JPanel {
         section.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
         
         JLabel titleLabel = new JLabel("Frase Motivacional");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        titleLabel.setForeground(new Color(192, 202, 245));
+        titleLabel.setFont(UITheme.font(Font.BOLD, 14));
+        titleLabel.setForeground(UITheme.ACCENT_MUTED);
         
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         topPanel.setOpaque(false);
         quoteEnabled = new JCheckBox("Habilitar");
         quoteEnabled.setOpaque(false);
-        quoteEnabled.setForeground(new Color(175, 177, 179));
+        quoteEnabled.setForeground(UITheme.FOREGROUND);
         topPanel.add(titleLabel);
         topPanel.add(Box.createHorizontalStrut(20));
         topPanel.add(quoteEnabled);
         
         quoteField = new JTextField();
         quoteField.setEnabled(false);
-        quoteField.setBackground(new Color(26, 26, 26));
-        quoteField.setForeground(new Color(175, 177, 179));
-        quoteField.setCaretColor(new Color(175, 177, 179));
+        quoteField.setBackground(UITheme.SURFACE_RAISED);
+        quoteField.setForeground(UITheme.FOREGROUND);
+        quoteField.setCaretColor(UITheme.ACCENT_MUTED);
         quoteField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(34, 34, 34), 1),
+            BorderFactory.createLineBorder(UITheme.BORDER, 1),
             BorderFactory.createEmptyBorder(8, 10, 8, 10)
         ));
         
@@ -108,11 +109,11 @@ public class OptionsPanel extends JPanel {
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         headerPanel.setOpaque(false);
         JLabel titleLabel = new JLabel("Foto de Perfil");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        titleLabel.setForeground(new Color(192, 202, 245));
+        titleLabel.setFont(UITheme.font(Font.BOLD, 14));
+        titleLabel.setForeground(UITheme.ACCENT_MUTED);
         photoEnabled = new JCheckBox("Habilitar");
         photoEnabled.setOpaque(false);
-        photoEnabled.setForeground(new Color(175, 177, 179));
+        photoEnabled.setForeground(UITheme.FOREGROUND);
         headerPanel.add(titleLabel);
         headerPanel.add(Box.createHorizontalStrut(20));
         headerPanel.add(photoEnabled);
@@ -126,10 +127,10 @@ public class OptionsPanel extends JPanel {
         photoPathField = new JTextField();
         photoPathField.setEnabled(false);
         photoPathField.setEditable(false);
-        photoPathField.setBackground(new Color(26, 26, 26));
-        photoPathField.setForeground(new Color(175, 177, 179));
+        photoPathField.setBackground(UITheme.SURFACE_RAISED);
+        photoPathField.setForeground(UITheme.FOREGROUND);
         photoPathField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(34, 34, 34), 1),
+            BorderFactory.createLineBorder(UITheme.BORDER, 1),
             BorderFactory.createEmptyBorder(8, 10, 8, 10)
         ));
         
@@ -147,11 +148,11 @@ public class OptionsPanel extends JPanel {
         formatPanel.setOpaque(false);
         formatPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         JLabel formatLabel = new JLabel("Formato:");
-        formatLabel.setForeground(new Color(175, 177, 179));
+        formatLabel.setForeground(UITheme.FOREGROUND);
         photoFormatCombo = new JComboBox<>(new String[]{"Padrão", "Retângulo", "Circular", "Lado Direito"});
         photoFormatCombo.setEnabled(false);
-        photoFormatCombo.setBackground(new Color(26, 26, 26));
-        photoFormatCombo.setForeground(new Color(175, 177, 179));
+        photoFormatCombo.setBackground(UITheme.SURFACE_RAISED);
+        photoFormatCombo.setForeground(UITheme.FOREGROUND);
         photoFormatCombo.setPreferredSize(new Dimension(200, 35));
         formatPanel.add(formatLabel);
         formatPanel.add(Box.createHorizontalStrut(10));
@@ -170,8 +171,8 @@ public class OptionsPanel extends JPanel {
         section.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
         
         JLabel titleLabel = new JLabel("Cor do Tema");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        titleLabel.setForeground(new Color(192, 202, 245));
+        titleLabel.setFont(UITheme.font(Font.BOLD, 14));
+        titleLabel.setForeground(UITheme.ACCENT_MUTED);
         
         JPanel contentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         contentPanel.setOpaque(false);
@@ -184,7 +185,7 @@ public class OptionsPanel extends JPanel {
         colorPreview.setOpaque(true);
         colorPreview.setBackground(Color.decode("#" + selectedColor));
         colorPreview.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(34, 34, 34), 2),
+            BorderFactory.createLineBorder(UITheme.BORDER, 2),
             BorderFactory.createEmptyBorder(15, 30, 15, 30)
         ));
         
@@ -205,8 +206,8 @@ public class OptionsPanel extends JPanel {
         section.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         
         JLabel titleLabel = new JLabel("Redes Sociais Adicionais");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        titleLabel.setForeground(new Color(192, 202, 245));
+        titleLabel.setFont(UITheme.font(Font.BOLD, 14));
+        titleLabel.setForeground(UITheme.ACCENT_MUTED);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         section.add(titleLabel);
         section.add(Box.createVerticalStrut(15));
@@ -226,17 +227,17 @@ public class OptionsPanel extends JPanel {
             
             JCheckBox checkbox = new JCheckBox(capitalize(social));
             checkbox.setOpaque(false);
-            checkbox.setForeground(new Color(175, 177, 179));
+            checkbox.setForeground(UITheme.FOREGROUND);
             checkbox.setPreferredSize(new Dimension(150, 35));
             socialCheckboxes.put(social, checkbox);
             
             JTextField field = new JTextField();
             field.setEnabled(false);
-            field.setBackground(new Color(26, 26, 26));
-            field.setForeground(new Color(175, 177, 179));
-            field.setCaretColor(new Color(175, 177, 179));
+            field.setBackground(UITheme.SURFACE_RAISED);
+            field.setForeground(UITheme.FOREGROUND);
+            field.setCaretColor(UITheme.ACCENT_MUTED);
             field.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(34, 34, 34), 1),
+                BorderFactory.createLineBorder(UITheme.BORDER, 1),
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)
             ));
             socialFields.put(social, field);

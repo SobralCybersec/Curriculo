@@ -1,16 +1,18 @@
 package com.dev.view.components;
 
+import com.dev.util.UITheme;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class ModernButton extends JButton {
+    public enum Style { PRIMARY, SECONDARY, GHOST, DANGER }
+
     private Color hoverColor;
     private Color pressedColor;
     private Color normalColor;
+    private Color borderColor;
     private int cornerRadius = 12;
-    private float shadowAlpha = 0.0f;
     
     public ModernButton(String text) {
         super(text);
@@ -26,48 +28,12 @@ public class ModernButton extends JButton {
         setFocusPainted(false);
         setBorderPainted(false);
         setContentAreaFilled(false);
-        setFont(new Font("Segoe UI", Font.BOLD, 13));
+        setRolloverEnabled(true);
+        setFont(UITheme.font(Font.BOLD, 13));
         setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        normalColor = new Color(26, 26, 26);
-        hoverColor = new Color(62, 62, 64);
-        pressedColor = new Color(78, 78, 78);
-        
-        setBackground(normalColor);
-        setForeground(new Color(220, 220, 220));
+        setOpaque(false);
         setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                shadowAlpha = 0.3f;
-                setBackground(hoverColor);
-                repaint();
-            }
-            
-            @Override
-            public void mouseExited(MouseEvent e) {
-                shadowAlpha = 0.0f;
-                setBackground(normalColor);
-                repaint();
-            }
-            
-            @Override
-            public void mousePressed(MouseEvent e) {
-                setBackground(pressedColor);
-                repaint();
-            }
-            
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (contains(e.getPoint())) {
-                    setBackground(hoverColor);
-                } else {
-                    setBackground(normalColor);
-                }
-                repaint();
-            }
-        });
+        setStyle(Style.SECONDARY);
     }
     
     @Override
@@ -75,17 +41,54 @@ public class ModernButton extends JButton {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        
-        if (shadowAlpha > 0) {
-            g2.setColor(new Color(0, 0, 0, (int)(shadowAlpha * 100)));
-            g2.fillRoundRect(2, 3, getWidth() - 4, getHeight() - 3, cornerRadius, cornerRadius);
-        }
-        
-        g2.setColor(getBackground());
-        g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
-        
+
+        if (!isEnabled()) g2.setComposite(AlphaComposite.SrcOver.derive(0.48f));
+        Color fill = getModel().isPressed() ? pressedColor
+                : getModel().isRollover() ? hoverColor : normalColor;
+        g2.setColor(fill);
+        g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, cornerRadius, cornerRadius);
+
+        g2.setColor(hasFocus() ? UITheme.ACCENT : borderColor);
+        g2.setStroke(new BasicStroke(hasFocus() ? 2f : 1f));
+        g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, cornerRadius, cornerRadius);
+
         g2.dispose();
         super.paintComponent(g);
+    }
+
+    public void setStyle(Style style) {
+        switch (style) {
+            case PRIMARY -> {
+                normalColor = UITheme.ACCENT;
+                hoverColor = UITheme.ACCENT_MUTED;
+                pressedColor = UITheme.ACCENT_PRESSED;
+                borderColor = UITheme.ACCENT;
+                setForeground(UITheme.BACKGROUND);
+            }
+            case SECONDARY -> {
+                normalColor = UITheme.SURFACE_RAISED;
+                hoverColor = UITheme.SELECTED;
+                pressedColor = UITheme.PRESSED;
+                borderColor = UITheme.BORDER;
+                setForeground(UITheme.TEXT_STRONG);
+            }
+            case GHOST -> {
+                normalColor = UITheme.SURFACE;
+                hoverColor = UITheme.SURFACE_RAISED;
+                pressedColor = UITheme.SELECTED;
+                borderColor = UITheme.SURFACE;
+                setForeground(UITheme.FOREGROUND);
+            }
+            case DANGER -> {
+                normalColor = UITheme.SURFACE_RAISED;
+                hoverColor = UITheme.SELECTED;
+                pressedColor = UITheme.PRESSED;
+                borderColor = UITheme.BORDER;
+                setForeground(UITheme.DANGER);
+            }
+        }
+        setBackground(normalColor);
+        repaint();
     }
     
     public void setNormalColor(Color color) {

@@ -1,5 +1,7 @@
 package com.dev.view;
 
+import com.dev.util.UITheme;
+import com.dev.view.components.IconFactory;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 
@@ -16,6 +18,7 @@ public class PDFPreviewPanel extends JPanel {
     private JScrollPane scrollPane;
     private JComboBox<Integer> pageSelector;
     private JCheckBox magnifierToggle;
+    private JLabel statusLabel;
     private File currentPdfFile;
     private long renderRequest;
     private SwingWorker<RenderedPage, Void> renderWorker;
@@ -23,37 +26,59 @@ public class PDFPreviewPanel extends JPanel {
     
     public PDFPreviewPanel() {
         setLayout(new BorderLayout());
-        setBackground(new Color(45, 45, 48));
-        setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(34, 34, 34), 1),
-            "Preview do PDF",
-            0, 0, new Font("Segoe UI", Font.BOLD, 12), new Color(175, 177, 179)
-        ));
+        setBackground(UITheme.SURFACE);
+        setBorder(BorderFactory.createLineBorder(UITheme.BORDER));
         
         imageLabel = new PDFImageLabel();
         scrollPane = new JScrollPane(imageLabel);
-        scrollPane.getViewport().setBackground(new Color(42, 42, 44));
+        scrollPane.getViewport().setBackground(UITheme.PREVIEW_CANVAS);
         scrollPane.setBorder(null);
         
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.setBackground(new Color(45, 45, 48));
+        JPanel topPanel = new JPanel(new BorderLayout(0, 8));
+        topPanel.setBackground(UITheme.SURFACE);
+        topPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, UITheme.BORDER),
+                BorderFactory.createEmptyBorder(11, 14, 11, 14)));
+
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
+        titlePanel.setOpaque(false);
+        JLabel titleLabel = new JLabel("Prévia do documento");
+        titleLabel.setFont(UITheme.font(Font.BOLD, 14));
+        titleLabel.setForeground(UITheme.TEXT_STRONG);
+        statusLabel = new JLabel("Aguardando compilação");
+        statusLabel.setFont(UITheme.font(Font.PLAIN, 11));
+        statusLabel.setForeground(UITheme.TEXT_MUTED);
+        titlePanel.add(titleLabel);
+        titlePanel.add(Box.createRigidArea(new Dimension(0, 2)));
+        titlePanel.add(statusLabel);
+        topPanel.add(titlePanel, BorderLayout.NORTH);
+
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 2));
+        controls.setOpaque(false);
         
         JLabel pageLabel = new JLabel("Página:");
-        pageLabel.setForeground(new Color(175, 177, 179));
-        topPanel.add(pageLabel);
+        pageLabel.setFont(UITheme.font(Font.PLAIN, 12));
+        pageLabel.setForeground(UITheme.TEXT_MUTED);
+        controls.add(pageLabel);
         
         pageSelector = new JComboBox<>();
-        pageSelector.setBackground(new Color(26, 26, 26));
-        pageSelector.setForeground(new Color(175, 177, 179));
+        pageSelector.setBackground(UITheme.SURFACE_RAISED);
+        pageSelector.setForeground(UITheme.FOREGROUND);
+        pageSelector.setPreferredSize(new Dimension(64, 32));
         pageSelector.addActionListener(e -> {
             if (!updatingPageSelector) renderCurrentPage();
         });
-        topPanel.add(pageSelector);
+        controls.add(pageSelector);
         
-        topPanel.add(Box.createHorizontalStrut(20));
         magnifierToggle = new JCheckBox("Lupa", false);
-        magnifierToggle.setBackground(new Color(45, 45, 48));
-        magnifierToggle.setForeground(new Color(175, 177, 179));
+        magnifierToggle.setIcon(IconFactory.createMagnifierIcon(16, UITheme.TEXT_MUTED));
+        magnifierToggle.setSelectedIcon(IconFactory.createMagnifierIcon(16, UITheme.ACCENT));
+        magnifierToggle.setIconTextGap(7);
+        magnifierToggle.setFont(UITheme.font(Font.PLAIN, 12));
+        magnifierToggle.setBackground(UITheme.SURFACE);
+        magnifierToggle.setForeground(UITheme.FOREGROUND);
+        magnifierToggle.setToolTipText("Ativar lupa de alta resolução");
         magnifierToggle.addActionListener(e -> {
             imageLabel.setMagnifierEnabled(magnifierToggle.isSelected());
             if (magnifierToggle.isSelected()) {
@@ -62,7 +87,8 @@ public class PDFPreviewPanel extends JPanel {
                 imageLabel.clearHighResolutionImage();
             }
         });
-        topPanel.add(magnifierToggle);
+        controls.add(magnifierToggle);
+        topPanel.add(controls, BorderLayout.CENTER);
         
         add(topPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
@@ -77,7 +103,9 @@ public class PDFPreviewPanel extends JPanel {
             updatingPageSelector = false;
         }
         imageLabel.setImages(null, null);
+        imageLabel.setIcon(null);
         imageLabel.setText("Carregando PDF...");
+        statusLabel.setText("Renderizando documento…");
         renderPage(0, true);
     }
     
@@ -112,10 +140,19 @@ public class PDFPreviewPanel extends JPanel {
                 try {
                     RenderedPage page = get();
                     if (populatePageSelector) populatePageSelector(page.pageCount(), pageIndex);
-                    imageLabel.setImages(page.displayImage(), page.highResImage());
+                    BufferedImage highResImage = page.highResImage();
+                    if (!magnifierToggle.isSelected() && highResImage != null) {
+                        highResImage.flush();
+                        highResImage = null;
+                    }
+                    imageLabel.setImages(page.displayImage(), highResImage);
+                    statusLabel.setText("Página " + (pageIndex + 1) + " de " + page.pageCount());
                 } catch (Exception e) {
                     imageLabel.setImages(null, null);
                     imageLabel.setText("Erro ao carregar PDF: " + e.getMessage());
+                    statusLabel.setText("Não foi possível abrir o documento");
+                } finally {
+                    if (request == renderRequest) renderWorker = null;
                 }
             }
         };
@@ -142,12 +179,22 @@ public class PDFPreviewPanel extends JPanel {
         renderWorker = null;
         pageSelector.removeAllItems();
         imageLabel.setText("Nenhum PDF carregado");
-        imageLabel.setIcon(null);
         imageLabel.setImages(null, null);
+        imageLabel.setIcon(IconFactory.createNavigationIcon("document", 36, UITheme.TEXT_MUTED));
+        imageLabel.setIconTextGap(12);
+        statusLabel.setText("Aguardando compilação");
     }
 
     int getLoadedPageCount() {
         return pageSelector.getItemCount();
+    }
+
+    boolean hasHighResolutionPreview() {
+        return imageLabel.hasHighResolutionImage();
+    }
+
+    boolean isRenderIdle() {
+        return renderWorker == null;
     }
 
     private record RenderedPage(int pageCount, BufferedImage displayImage, BufferedImage highResImage) {
@@ -167,8 +214,13 @@ public class PDFPreviewPanel extends JPanel {
             super("Nenhum PDF carregado", SwingConstants.CENTER);
             setVerticalAlignment(SwingConstants.CENTER);
             setHorizontalAlignment(SwingConstants.CENTER);
-            setForeground(new Color(175, 177, 179));
-            setBackground(new Color(42, 42, 44));
+            setFont(UITheme.font(Font.PLAIN, 13));
+            setForeground(UITheme.TEXT_MUTED);
+            setBackground(UITheme.PREVIEW_CANVAS);
+            setIcon(IconFactory.createNavigationIcon("document", 36, UITheme.TEXT_MUTED));
+            setIconTextGap(12);
+            setHorizontalTextPosition(SwingConstants.CENTER);
+            setVerticalTextPosition(SwingConstants.BOTTOM);
             setOpaque(true);
             repaintTimer = new Timer(16, e -> {
                 repaintPending = false;
@@ -235,6 +287,10 @@ public class PDFPreviewPanel extends JPanel {
             repaint();
         }
 
+        private boolean hasHighResolutionImage() {
+            return highResImage != null;
+        }
+
         private void scheduleRepaint() {
             if (repaintPending) return;
             repaintPending = true;
@@ -291,11 +347,11 @@ public class PDFPreviewPanel extends JPanel {
                             g2d.drawImage(magnified, magnifierX, magnifierY, MAGNIFIER_SIZE, MAGNIFIER_SIZE, null);
                             
                             g2d.setClip(null);
-                            g2d.setColor(new Color(34, 34, 34));
+                            g2d.setColor(UITheme.BORDER);
                             g2d.setStroke(new BasicStroke(4));
                             g2d.drawOval(magnifierX, magnifierY, MAGNIFIER_SIZE, MAGNIFIER_SIZE);
                             
-                            g2d.setColor(new Color(175, 177, 179));
+                            g2d.setColor(UITheme.FOREGROUND);
                             g2d.setStroke(new BasicStroke(2));
                             g2d.drawOval(magnifierX + 2, magnifierY + 2, MAGNIFIER_SIZE - 4, MAGNIFIER_SIZE - 4);
                         }

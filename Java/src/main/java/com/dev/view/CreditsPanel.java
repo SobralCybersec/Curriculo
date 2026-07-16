@@ -1,6 +1,7 @@
 package com.dev.view;
 
 import com.dev.BuildInfo;
+import com.dev.util.UITheme;
 import com.dev.view.components.BannerPanel;
 import com.dev.view.components.ModernPanel;
 import com.dev.view.components.RoundedScrollPane;
@@ -13,7 +14,7 @@ public class CreditsPanel extends JPanel {
 
     public CreditsPanel() {
         setLayout(new BorderLayout());
-        setBackground(new Color(45, 45, 48));
+        setBackground(UITheme.BACKGROUND);
 
         ModernPanel contentPanel = new ModernPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
@@ -33,8 +34,8 @@ public class CreditsPanel extends JPanel {
             "Modern Look and Feel para aplicações Swing");
 
         addSection(contentPanel, "Animações",
-            "Radiance Animation Library 8.5.0",
-            "Framework de animações suaves e profissionais");
+            "Utilitários Swing do projeto",
+            "Transições leves sem dependências adicionais");
 
         addSection(contentPanel, "Processamento PDF",
             "Apache PDFBox 2.0.30",
@@ -60,11 +61,11 @@ public class CreditsPanel extends JPanel {
 
         RoundedScrollPane scrollPane = new RoundedScrollPane(contentPanel);
         scrollPane.setBorder(null);
-        scrollPane.getViewport().setBackground(new Color(45, 45, 48));
+        scrollPane.getViewport().setBackground(UITheme.BACKGROUND);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
         JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(new Color(45, 45, 48));
+        wrapper.setBackground(UITheme.BACKGROUND);
         wrapper.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         wrapper.add(scrollPane, BorderLayout.CENTER);
         add(wrapper, BorderLayout.CENTER);
@@ -76,9 +77,9 @@ public class CreditsPanel extends JPanel {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(26, 26, 26));
+                g2.setColor(UITheme.SURFACE);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
-                g2.setColor(new Color(34, 34, 34));
+                g2.setColor(UITheme.BORDER);
                 g2.setStroke(new BasicStroke(1));
                 g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 15, 15);
                 g2.dispose();
@@ -91,8 +92,8 @@ public class CreditsPanel extends JPanel {
         section.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
         JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        titleLabel.setForeground(new Color(192, 202, 245));
+        titleLabel.setFont(UITheme.font(Font.BOLD, 14));
+        titleLabel.setForeground(UITheme.ACCENT_MUTED);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         section.add(titleLabel);
         section.add(Box.createVerticalStrut(8));
@@ -110,11 +111,11 @@ public class CreditsPanel extends JPanel {
 
     private JLabel createClickableLabel(String text) {
         JLabel label = new JLabel("<html>" + text + "</html>");
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        label.setForeground(new Color(175, 177, 179));
+        label.setFont(UITheme.font(Font.PLAIN, 13));
+        label.setForeground(UITheme.FOREGROUND);
 
         if (text.startsWith("http")) {
-            label.setForeground(new Color(122, 162, 247));
+            label.setForeground(UITheme.ACCENT);
             label.setCursor(new Cursor(Cursor.HAND_CURSOR));
             label.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -134,13 +135,13 @@ public class CreditsPanel extends JPanel {
 
     private void addFooter(JPanel panel) {
         JLabel versionLabel = new JLabel("Versão " + BuildInfo.version());
-        versionLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        versionLabel.setForeground(new Color(120, 120, 120));
+        versionLabel.setFont(UITheme.font(Font.ITALIC, 12));
+        versionLabel.setForeground(UITheme.TEXT_MUTED);
         versionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel descLabel = new JLabel("Desenvolvido para facilitar a criação de currículos profissionais");
-        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        descLabel.setForeground(new Color(150, 150, 150));
+        descLabel.setFont(UITheme.font(Font.PLAIN, 12));
+        descLabel.setForeground(UITheme.TEXT_MUTED);
         descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         panel.add(versionLabel);
